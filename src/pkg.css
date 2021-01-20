@@ -1,0 +1,26 @@
+.Wrapper {
+    margin-bottom: 15px;
+    align-items: center;
+    display: flex;
+    overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    flex-flow: row nowrap;
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+    padding: 60px 0;
+}
+
+.Wrapper div {
+    transition: 0s;
+}
+
+.Wrapper::-webkit-scrollbar {
+    display: none;
+}
+
+@media (max-width: 590px) {
+    .Wrapper {
+        display: none;
+    }
+}
