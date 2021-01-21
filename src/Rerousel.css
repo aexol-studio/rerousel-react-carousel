@@ -1,5 +1,4 @@
 .Wrapper {
-    margin-bottom: 15px;
     align-items: center;
     display: flex;
     overflow-x: scroll;
@@ -8,19 +7,13 @@
     flex-flow: row nowrap;
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
-    padding: 60px 0;
 }
 
-.Wrapper div {
-    transition: 0s;
+.Wrapper > * {
+    box-sizing: border-box;
+    flex-shrink: 0;
 }
 
 .Wrapper::-webkit-scrollbar {
     display: none;
-}
-
-@media (max-width: 590px) {
-    .Wrapper {
-        display: none;
-    }
 }
