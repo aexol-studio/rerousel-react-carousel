@@ -3,7 +3,7 @@ import './Rerousel.css';
 
 interface RerouselProps {
     itemWidth?: number;
-    itemRef: React.RefObject<HTMLInputElement>;
+    itemRef: RefObject<HTMLElement>;
     interval?: number;
 }
 

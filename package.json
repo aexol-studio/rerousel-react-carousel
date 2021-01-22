@@ -2,7 +2,7 @@
     "name": "rerousel",
     "version": "0.0.0",
     "description": "",
-    "main": "lib/index.js",
+    "main": "lib/Rerousel.js",
     "scripts": {
         "test": "jest",
         "test:watch": "jest --watch",
