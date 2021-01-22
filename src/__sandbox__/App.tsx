@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Rerousel } from '@/Rerousel';
+import { Rerousel } from '@/index';
 import { FullWidthCarouselData, CustomWidthCarouselData } from '@/__sandbox__/assets/data';
 import './App.css';
 
