@@ -41,8 +41,6 @@ export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval 
         const updateWidth = useCallback(() => {
             if (elementRef && elementRef.current) {
                 const { width } = elementRef.current.getBoundingClientRect();
-                console.log(width);
-
                 setWidth(width);
             }
         }, [elementRef]);
