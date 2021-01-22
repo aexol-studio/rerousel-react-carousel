@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useState, useRef, Children, RefObject } from 'react';
-import {style} from 'typestyle';
+import { style } from 'typestyle';
 
 interface RerouselProps {
     itemWidth?: number;
@@ -14,18 +14,18 @@ const wrapper = style({
     scrollSnapType: 'x mandatory',
     '-webkit-overflow-scrolling': 'touch',
     flexFlow: 'row nowrap',
-    '-ms-overflow-style': 'none', 
+    '-ms-overflow-style': 'none',
     scrollbarWidth: 'none',
     $nest: {
         '& > *': {
             boxSizing: 'border-box',
-            flexShrink: 0
+            flexShrink: 0,
         },
 
         '&::-webkit-scrollbar': {
-            display: 'none'
-        }
-    }
+            display: 'none',
+        },
+    },
 });
 
 export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval = 3000 }) => {
@@ -89,7 +89,7 @@ export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval 
             });
         };
     }, [itemWidth]);
-    
+
     return (
         <div className={wrapper} ref={wrapperRef}>
             {children}

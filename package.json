@@ -1,14 +1,15 @@
 {
     "name": "rerousel",
-    "version": "0.0.5",
-    "description": "",
-    "main": "lib/Rerousel.js",
+    "version": "0.0.6",
+    "description": "React carousel",
+    "main": "lib/index.js",
+    "private": false,
     "scripts": {
         "test": "jest",
         "test:watch": "jest --watch",
         "start": "snowpack dev --polyfill-node",
         "build:sandbox": "snowpack build --polyfill-node",
-        "build": "tsc --build tsconfig.build.json",
+        "build": "ttsc --build tsconfig.build.json",
         "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix"
     },
     "repository": {
@@ -44,8 +45,7 @@
     },
     "peerDependencies": {
         "react": "^17.0.1",
-        "react-dom": "^17.0.1",
-        "typestyle": "^2.1.0"
+        "react-dom": "^17.0.1"
     },
     "dependencies": {
         "typestyle": "^2.1.0"
