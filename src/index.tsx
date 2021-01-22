@@ -89,6 +89,7 @@ export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval 
             });
         };
     }, [itemWidth]);
+    
     return (
         <div className={wrapper} ref={wrapperRef}>
             {children}
