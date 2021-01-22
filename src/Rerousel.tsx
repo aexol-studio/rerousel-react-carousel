@@ -1,11 +1,32 @@
 import React, { useEffect, useCallback, useState, useRef, Children, RefObject } from 'react';
-import './Rerousel.css';
+import {style} from 'typestyle';
 
 interface RerouselProps {
     itemWidth?: number;
     itemRef: RefObject<HTMLElement>;
     interval?: number;
 }
+
+const wrapper = style({
+    display: 'flex',
+    alignItems: 'center',
+    overflowX: 'scroll',
+    scrollSnapType: 'x mandatory',
+    '-webkit-overflow-scrolling': 'touch',
+    flexFlow: 'row nowrap',
+    '-ms-overflow-style': 'none', 
+    scrollbarWidth: 'none',
+    $nest: {
+        '& > *': {
+            boxSizing: 'border-box',
+            flexShrink: 0
+        },
+
+        '&::-webkit-scrollbar': {
+            display: 'none'
+        }
+    }
+});
 
 export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval = 3000 }) => {
     const [itemWidth] = useWidth(itemRef);
@@ -71,7 +92,7 @@ export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval 
         };
     }, [itemWidth]);
     return (
-        <div className="Wrapper" ref={wrapperRef}>
+        <div className={wrapper} ref={wrapperRef}>
             {children}
             {children}
         </div>
