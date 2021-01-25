@@ -1,6 +1,6 @@
 ![enter image description here](https://svgshare.com/i/TQU.svg)
 
-[![npm](https://img.shields.io/npm/v/rerousel.svg?style=flat-square)](https://www.npmjs.com/package/graphql-editor) [ ![npm downloads](https://img.shields.io/npm/dt/rerousel.svg?style=flat-square)](https://www.npmjs.com/package/rerousel)
+[![npm](https://img.shields.io/npm/v/rerousel.svg?style=flat-square)](https://www.npmjs.com/package/rerousel) [ ![npm downloads](https://img.shields.io/npm/dt/rerousel.svg?style=flat-square)](https://www.npmjs.com/package/rerousel)
 
 ### Rerousel is the simplest and the lightest infinite carousel package made for React.
 
