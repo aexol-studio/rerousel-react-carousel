@@ -1,11 +1,12 @@
 import React, { useRef } from 'react';
 import { Rerousel } from '@/index';
-import { FullWidthCarouselData, CustomWidthCarouselData } from '@/__sandbox__/assets/data';
+import { FullWidthCarouselData, CustomWidthCarouselData, itemsTest } from '@/__sandbox__/assets/data';
 import './App.css';
 
 export const App = () => {
     const itemRef = useRef(null);
     const itemTwoRef = useRef(null);
+    const itemThreeRef = useRef(null);
 
     return (
         <>
@@ -31,6 +32,18 @@ export const App = () => {
                             <div className="item">
                                 <h1 className="item__header">{item.itemHeader}</h1>
                                 <p>{item.itemContent}</p>
+                            </div>
+                        </div>
+                    );
+                })}
+            </Rerousel>
+
+            <Rerousel itemRef={itemThreeRef} interval={2000}>
+                {itemsTest.map((item, idx) => {
+                    return (
+                        <div ref={itemThreeRef} className="wrapper_gif" key={idx}>
+                            <div className="item_gif">
+                                <h1 className="item__header">{item}</h1>
                             </div>
                         </div>
                     );

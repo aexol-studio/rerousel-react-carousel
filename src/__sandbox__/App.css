@@ -37,6 +37,18 @@ body {
     justify-content: center;
     background-color: #282c34;
     font-size: 15px;
+}
+
+.wrapper_gif {
+    width: calc(100% / 5);
+
+    display: flex;
+    justify-content: center;
+    font-size: 15px;
+}
+
+.item_gif {
+    color: white;
     padding: 30px;
 }
 

@@ -62,4 +62,12 @@ export const CustomWidthCarouselData = [
     },
 ];
 
-export const itemsTest = ['SIMPLCITY', 'LIGHTNESS', 'PERFECTION', 'ACCESSIBILITY', 'VERSATILITY', 'INFINITY', 'FUN'];
+export const itemsTest = [
+    'SIMPLCITY',
+    'LIGHTNESS',
+    'PERFECTION',
+    'ACCESSIBILITY',
+    'VERSATILITY',
+    'INFINITY',
+    'RELIABILITY',
+];

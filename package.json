@@ -1,6 +1,6 @@
 {
     "name": "rerousel",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "description": "React carousel",
     "main": "lib/index.js",
     "private": false,
@@ -44,8 +44,8 @@
         "typescript-transform-paths": "^2.2.2"
     },
     "peerDependencies": {
-        "react": "^17.0.1",
-        "react-dom": "^17.0.1"
+        "react": ">=16.12.0",
+        "react-dom": ">=16.12.0"
     },
     "dependencies": {
         "typestyle": "^2.1.0"
