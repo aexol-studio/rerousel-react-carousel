@@ -1,6 +1,6 @@
 {
     "name": "rerousel",
-    "version": "0.0.8",
+    "version": "0.0.9",
     "description": "React carousel",
     "main": "lib/index.js",
     "private": false,
@@ -18,6 +18,13 @@
     },
     "author": "Aexol <aexol@aexol.com> (http://aexol.com)",
     "license": "MIT",
+    "keywords": [
+        "carousel",
+        "simple",
+        "lightweight",
+        "react carousel",
+        "react"
+    ],
     "bugs": {
         "url": "https://github.com/aexol-studio/rerousel/issues"
     },
