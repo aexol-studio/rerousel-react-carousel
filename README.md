@@ -1,4 +1,9 @@
-![enter image description here](https://svgshare.com/i/TQU.svg)
+
+
+
+[![Rerousel logo](https://svgshare.com/i/TUi.svg)](https://www.npmjs.com/package/rerousel)
+
+![Rerousel gif](https://s2.gifyu.com/images/rerousel3.gif)
 
 [![npm](https://img.shields.io/npm/v/rerousel.svg?style=flat-square)](https://www.npmjs.com/package/rerousel) [ ![npm downloads](https://img.shields.io/npm/dt/rerousel.svg?style=flat-square)](https://www.npmjs.com/package/rerousel)
 
