@@ -1,8 +1,8 @@
 import React from 'react';
 import { style, media } from 'typestyle';
 
-import npm_logo from '../../__sandbox__/assets/images/npm-logo.svg';
-import github_logo from '../../__sandbox__/assets/images/github-logo.svg';
+import NpmSvg from '../assets/svg/NpmSvg';
+import GithubSvg from '../assets/svg/GithubSvg';
 
 const Container = style({
     height: '70px',
@@ -47,11 +47,11 @@ export const Navbar = () => {
 
                 <div className={Links}>
                     <a href="https://www.npmjs.com/package/rerousel">
-                        <img src={npm_logo} className={Icon} style={{ marginTop: '15px', width: '40px' }} />
+                        <NpmSvg />
                     </a>
 
                     <a href="https://github.com/aexol-studio/rerousel">
-                        <img src={github_logo} className={Icon} style={{ margin: '10px 0px 10px 10px' }} />
+                        <GithubSvg />
                     </a>
                 </div>
             </div>

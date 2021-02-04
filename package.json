@@ -44,6 +44,7 @@
         "prettier": "^2.2.1",
         "react": "^17.0.1",
         "react-dom": "^17.0.1",
+        "react-live": "^2.2.3",
         "snowpack": "^3.0.10",
         "ts-jest": "^26.4.4",
         "ttypescript": "^1.5.12",

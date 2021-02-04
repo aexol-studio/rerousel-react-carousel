@@ -1,7 +1,6 @@
 import React from 'react';
 import { style } from 'typestyle';
-
-import { Navbar, Hero, Carousel, Description } from './components';
+import { Navbar, Hero, Carousel, Description, Content } from './components';
 
 style({
     $nest: {
@@ -9,6 +8,7 @@ style({
             margin: '0',
             padding: '0',
             backgroundColor: '#F0F0F0',
+            height: '2000px',
         },
     },
 });
@@ -20,6 +20,7 @@ export const App = () => {
             <Hero />
             <Carousel />
             <Description />
+            <Content />
         </>
     );
 };
