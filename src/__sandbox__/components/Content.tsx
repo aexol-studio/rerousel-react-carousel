@@ -27,9 +27,27 @@ const EditorHeader = style({
 const Editor = style({
     height: 'calc(100% - 50px)',
     width: '100%',
-    padding: '10px !important',
     fontSize: '14px',
     borderRadius: '0 0 10px 10px',
+});
+
+const PreviewContainer = style({
+    backgroundColor: 'white',
+    width: '1100px',
+    margin: '50px auto',
+    borderRadius: '10px',
+});
+
+const PreviewHeader = style({
+    height: '50px',
+    backgroundColor: 'gray',
+    borderRadius: '10px 10px 0 0',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    color: 'white',
+    fontFamily: 'Raleway, sans-serif',
+    fontWeight: 'bold',
 });
 
 const scope = { Rerousel, useRef };
@@ -63,8 +81,10 @@ export const Content = () => {
                 <header className={EditorHeader}>REROUSEL SANDBOX</header>
                 <LiveEditor className={Editor} />
             </div>
-            <LiveError />
-            <LivePreview />
+            <div className={PreviewContainer}>
+                <header className={PreviewHeader}>REROUSEL PREVIEW</header>
+                <LivePreview />
+            </div>
         </LiveProvider>
     );
 };
