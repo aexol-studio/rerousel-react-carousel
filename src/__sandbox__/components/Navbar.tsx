@@ -1,17 +1,25 @@
 import React from 'react';
-import { style } from 'typestyle';
+import { style, media } from 'typestyle';
 
 import npm_logo from '../../__sandbox__/assets/images/npm-logo.svg';
 import github_logo from '../../__sandbox__/assets/images/github-logo.svg';
 
 const Container = style({
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '0 18%',
     height: '70px',
     backgroundColor: '#20232A',
 });
+
+const Navigation = style(
+    {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        maxWidth: '1100px',
+        margin: 'auto',
+        height: '100%',
+    },
+    media({ maxWidth: 1150 }, { margin: '0 5%' }),
+);
 
 const Logo = style({
     fontFamily: 'Raleway, sans-serif',
@@ -31,17 +39,22 @@ const Icon = style({
     margin: '10px',
 });
 
-function Navbar() {
+export const Navbar = () => {
     return (
         <div className={Container}>
-            <h1 className={Logo}>REROUSEL</h1>
+            <div className={Navigation}>
+                <h1 className={Logo}>REROUSEL</h1>
 
-            <div className={Links}>
-                <img src={npm_logo} className={Icon} style={{ width: '40px' }} />
-                <img src={github_logo} className={Icon} />
+                <div className={Links}>
+                    <a href="https://www.npmjs.com/package/rerousel">
+                        <img src={npm_logo} className={Icon} style={{ marginTop: '15px', width: '40px' }} />
+                    </a>
+
+                    <a href="https://github.com/aexol-studio/rerousel">
+                        <img src={github_logo} className={Icon} style={{ margin: '10px 0px 10px 10px' }} />
+                    </a>
+                </div>
             </div>
         </div>
     );
-}
-
-export default Navbar;
+};

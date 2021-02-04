@@ -5,6 +5,9 @@
 /** @type {import("snowpack").SnowpackUserConfig } */
 module.exports = {
     // mount: {},
+    optimize: {
+        minify: true,
+    },
     plugins: [['@snowpack/plugin-typescript', { tsc: 'ttsc', args: ' --project tsconfig.build.json' }]],
     // installOptions: {},a
     // devOptions: {},

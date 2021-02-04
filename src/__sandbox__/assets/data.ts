@@ -62,4 +62,22 @@ export const CustomWidthCarouselData = [
     },
 ];
 
-export const itemsTest = ['SIMPLCITY', 'LIGHTNESS', 'ACCESSIBILITY', 'VERSATILITY', 'INFINITY', 'RELIABILITY'];
+export const wordCarouselItems = ['SIMPLCITY', 'LIGHTNESS', 'ACCESSIBILITY', 'VERSATILITY', 'INFINITY', 'RELIABILITY'];
+
+export const descriptionData = [
+    {
+        header: 'SIMPLICITY',
+        description:
+            'Set up your carousel in the blink of an eye. All you have to do is installing the package and the component is ready to use!',
+    },
+    {
+        header: 'LIGHTNESS',
+        description:
+            'Rerousel is the lightest working infinite react carousel available to download from the NPM, using only the packages that are necessary. ',
+    },
+    {
+        header: 'LIGHTNESS',
+        description:
+            'Rerousel is the lightest working infinite react carousel available to download from the NPM, using only the packages that are necessary. ',
+    },
+];
