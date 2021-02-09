@@ -24,7 +24,9 @@ It supports all types of JSX elements, so you don't have to worry about compatib
 
 ## Table of contents
 
--   [How to use?](#how-to-use)
+- [How to use?](#how-to-use)
+- [Contribute](#contribute)
+
 
 ## How to use?
 
@@ -59,3 +61,12 @@ export const Component: React.FC<CustomersProps> = ({ customers }) => {
 ```
 
 4. Create a ref pointing at your outermost item inside of the rerousel and include it in the Rerousel as **"itemRef"** prop.
+
+## Contribute
+
+1.  Fork this repo
+2.  Create your feature branch: git checkout -b feature-name
+3.  Commit your changes: git commit -am 'Add some feature'
+4.  Push to the branch: git push origin my-new-feature
+5.  Submit a pull request
+
