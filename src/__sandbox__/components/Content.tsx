@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 
 import { style } from 'typestyle';
+import styled from 'styled-components';
 import { Rerousel } from '@/index';
 import oceanic from 'prism-react-renderer/themes/oceanicNext';
 import { LiveProvider, LiveEditor, LiveError, LivePreview } from 'react-live';
@@ -10,6 +11,8 @@ const EditorContainer = style({
     height: '500px',
     margin: 'auto',
     borderRadius: '10px',
+    overflowY: 'auto',
+    maxHeight: 'calc(100% - 50px)',
 });
 
 const EditorHeader = style({
@@ -25,7 +28,6 @@ const EditorHeader = style({
 });
 
 const Editor = style({
-    height: 'calc(100% - 50px)',
     width: '100%',
     fontSize: '14px',
     borderRadius: '0 0 10px 10px',
@@ -50,23 +52,34 @@ const PreviewHeader = style({
     fontWeight: 'bold',
 });
 
-const scope = { Rerousel, useRef };
+const scope = { Rerousel, useRef, styled };
 
 const code = `function App() {
   const ref = useRef(null);
+
+  const Item = styled.div\`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: calc(100% / 2);
+    height: 100px;
+    font-family: Signika;
+    font-weight: bold;
+    font-size: 1.5em;
+    border: solid 3px black;
+    background-color: #61DAFB;
+  \`;
 
   return (
     <div>
       <header>
         
         <Rerousel itemRef={ref}>
-          <div ref={ref} style={{width: '50%', testAlign:'center', backgroundColor: 'red'}}>test1</div>
-          <div style={{width: '50%', testAlign:'center', backgroundColor: 'red'}}>test2</div>
-          <div style={{width: '50%', testAlign:'center', backgroundColor: 'red'}}>test3</div>
-          <div style={{width: '50%', testAlign:'center', backgroundColor: 'red'}}>test4</div>
-          <div style={{width: '50%', testAlign:'center', backgroundColor: 'red'}}>test5</div>
-          <div style={{width: '50%', testAlign:'center', backgroundColor: 'red'}}>test6</div>
-          <div style={{width: '50%', testAlign:'center', backgroundColor: 'red'}}>test7</div>
+          <Item ref={ref}>1</Item>
+          <Item>2</Item>
+          <Item>3</Item>
+          <Item>4</Item>
+          <Item>5</Item>
         </Rerousel>
         
       </header>

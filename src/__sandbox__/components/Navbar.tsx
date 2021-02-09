@@ -5,6 +5,9 @@ import NpmSvg from '../assets/svg/NpmSvg';
 import GithubSvg from '../assets/svg/GithubSvg';
 
 const Container = style({
+    position: 'fixed',
+    zIndex: '999',
+    width: '100%',
     height: '70px',
     backgroundColor: '#20232A',
 });

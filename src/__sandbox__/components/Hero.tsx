@@ -10,6 +10,7 @@ const Container = style(
         alignItems: 'center',
         height: '400px',
         backgroundColor: '#282C34',
+        paddingTop: '70px',
     },
     media({ maxWidth: 800 }, {  height: '350px' }),
 );

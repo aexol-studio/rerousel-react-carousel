@@ -1,3 +1,9 @@
+import Client1 from './images/client1.png';
+import Client2 from './images/client2.png';
+import Client3 from './images/client3.png';
+import Client4 from './images/client4.png';
+import Client5 from './images/client5.png';
+
 export const FullWidthCarouselData = [
     {
         itemHeader: 'Item 1',
@@ -71,13 +77,44 @@ export const descriptionData = [
             'Set up your carousel in the blink of an eye. All you have to do is installing the package and the component is ready to use!',
     },
     {
-        header: 'LIGHTNESS',
+        header: 'VERSATILITY',
         description:
-            'Rerousel is the lightest working infinite react carousel available to download from the NPM, using only the packages that are necessary. ',
+            "Show off your products or holiday pictures - Rerousel supports all types of JSX elements, so you don't have to worry about compatibility.",
     },
     {
         header: 'LIGHTNESS',
         description:
             'Rerousel is the lightest working infinite react carousel available to download from the NPM, using only the packages that are necessary. ',
+    },
+];
+
+export const clientCarouselItems = [
+    {
+        name: 'John Smith',
+        job: 'Client',
+        content:
+            '“Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus sed turpis sed ipsum tincidunt consectetur. Nulla egestas libero egestas, pretium velit sit amet, dictum eros.”',
+        image: Client1,
+    },
+    {
+        name: 'Kate Windle',
+        job: 'Client',
+        content:
+            '“Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus sed turpis sed ipsum tincidunt consectetur. Nulla egestas libero egestas, pretium velit sit amet, dictum eros.”',
+        image: Client2,
+    },
+    {
+        name: 'Mark Locke',
+        job: 'Client',
+        content:
+            '“Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus sed turpis sed ipsum tincidunt consectetur. Nulla egestas libero egestas, pretium velit sit amet, dictum eros.”',
+        image: Client3,
+    },
+    {
+        name: 'Carol Berkley',
+        job: 'Client',
+        content:
+            '“Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus sed turpis sed ipsum tincidunt consectetur. Nulla egestas libero egestas, pretium velit sit amet, dictum eros.”',
+        image: Client4,
     },
 ];

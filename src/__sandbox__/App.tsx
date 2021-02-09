@@ -1,6 +1,6 @@
 import React from 'react';
 import { style } from 'typestyle';
-import { Navbar, Hero, Carousel, Description, Content } from './components';
+import { Navbar, Hero, Carousel, Description, Content, Clients, Footer } from './components';
 
 style({
     $nest: {
@@ -21,6 +21,8 @@ export const App = () => {
             <Carousel />
             <Description />
             <Content />
+            <Clients />
+            <Footer />
         </>
     );
 };
