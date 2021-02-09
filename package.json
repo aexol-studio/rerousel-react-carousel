@@ -29,7 +29,7 @@
     "bugs": {
         "url": "https://github.com/aexol-studio/rerousel/issues"
     },
-    "homepage": "https://aexol-studio.github.io/rerousel",
+    "homepage": "https://aexol-studio.github.io",
     "devDependencies": {
         "@snowpack/plugin-typescript": "^1.2.0",
         "@types/jest": "^26.0.20",

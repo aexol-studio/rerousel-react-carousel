@@ -72,7 +72,6 @@ export const Clients = () => {
     itemRef: outermostItemRef,
     interval: 4e3
   }, clients.map((c) => {
-    console.log(c.image);
     return /* @__PURE__ */ React.createElement(WrapperItem, {
       ref: outermostItemRef,
       key: c.name
