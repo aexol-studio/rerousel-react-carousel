@@ -7,8 +7,9 @@ style({
         'html, body': {
             margin: '0',
             padding: '0',
-            backgroundColor: '#F0F0F0',
+            backgroundColor: 'white',
             height: '2000px',
+            scrollBehavior: 'smooth',
         },
     },
 });

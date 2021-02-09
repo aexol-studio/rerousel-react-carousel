@@ -35,6 +35,7 @@ const Button = style(
         width: '200px',
         backgroundColor: 'transparent',
         border: '4px solid #61DAFB',
+        borderRadius: '10px',
         color: '#FFF',
         fontFamily: 'Signika, sans-serif',
         fontSize: '18px',
@@ -59,7 +60,7 @@ export const Hero = () => {
         <div className={Container}>
             <div className={HeroItems}>
                 <img className={Logo} src={rerousel_logo} />
-                <button className={Button}>Show me the way ></button>
+                <button onClick = { () => window.open('https://github.com/aexol-studio/rerousel#how-to-use')}className={Button}>Show me the way ></button>
             </div>
         </div>
     );

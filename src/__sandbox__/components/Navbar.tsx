@@ -29,6 +29,16 @@ const Logo = style({
     fontWeight: 'bold',
     fontSize: '25px',
     color: '#FFF',
+    transition: '0.3s',
+    $nest: {
+        '&:hover': {
+            color: '#61DAFB',
+        },
+    },
+});
+
+const ToTop = style({
+    textDecoration: 'none',
 });
 
 const Links = style({
@@ -37,16 +47,13 @@ const Links = style({
     alignItems: 'center',
 });
 
-const Icon = style({
-    width: '20px',
-    margin: '10px',
-});
-
 export const Navbar = () => {
     return (
         <div className={Container}>
             <div className={Navigation}>
-                <h1 className={Logo}>REROUSEL</h1>
+                <a className={ToTop} href="#">
+                    <h1 className={Logo}>REROUSEL</h1>
+                </a>
 
                 <div className={Links}>
                     <a href="https://www.npmjs.com/package/rerousel">

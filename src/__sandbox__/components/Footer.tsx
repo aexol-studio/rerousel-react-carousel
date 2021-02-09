@@ -7,12 +7,14 @@ const Container = styled.footer`
     align-items: center;
     height: 70px;
     background-color: #20232a;
+    padding: 20px;
 `;
 
 const Copyright = styled.a`
     color: white;
     font-family: Signika, sans-serif;
     font-weight: normal;
+    text-align: center;
 `;
 
 export const Footer = () => {

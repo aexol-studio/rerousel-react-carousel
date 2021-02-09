@@ -104,7 +104,7 @@ export const clientCarouselItems = [
         image: Client2,
     },
     {
-        name: 'Mark Locke',
+        name: 'Judith Locke',
         job: 'Client',
         content:
             '“Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus sed turpis sed ipsum tincidunt consectetur. Nulla egestas libero egestas, pretium velit sit amet, dictum eros.”',
