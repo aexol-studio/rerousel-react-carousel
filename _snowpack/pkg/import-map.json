@@ -1,0 +1,10 @@
+{
+  "imports": {
+    "prism-react-renderer/themes/oceanicNext": "./prism-react-renderer/themes/oceanicNext.js",
+    "react": "./react.js",
+    "react-dom": "./react-dom.js",
+    "react-live": "./react-live.js",
+    "styled-components": "./styled-components.js",
+    "typestyle": "./typestyle.js"
+  }
+}
