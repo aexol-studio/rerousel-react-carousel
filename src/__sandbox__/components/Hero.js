@@ -6,7 +6,8 @@ const Container = style({
   justifyContent: "center",
   alignItems: "center",
   height: "400px",
-  backgroundColor: "#282C34"
+  backgroundColor: "#282C34",
+  paddingTop: "70px"
 }, media({maxWidth: 800}, {height: "350px"}));
 const HeroItems = style({
   display: "flex",
@@ -22,6 +23,7 @@ const Button = style({
   width: "200px",
   backgroundColor: "transparent",
   border: "4px solid #61DAFB",
+  borderRadius: "10px",
   color: "#FFF",
   fontFamily: "Signika, sans-serif",
   fontSize: "18px",
@@ -51,6 +53,7 @@ export const Hero = () => {
     className: Logo,
     src: rerousel_logo
   }), /* @__PURE__ */ React.createElement("button", {
+    onClick: () => window.open("https://github.com/aexol-studio/rerousel#how-to-use"),
     className: Button
   }, "Show me the way >")));
 };

@@ -8,7 +8,9 @@ const EditorContainer = style({
   width: "1100px",
   height: "500px",
   margin: "auto",
-  borderRadius: "10px"
+  borderRadius: "10px",
+  overflowY: "auto",
+  maxHeight: "calc(100% - 50px)"
 });
 const EditorHeader = style({
   height: "50px",
@@ -22,7 +24,6 @@ const EditorHeader = style({
   fontWeight: "bold"
 });
 const Editor = style({
-  height: "calc(100% - 50px)",
   width: "100%",
   fontSize: "14px",
   borderRadius: "0 0 10px 10px"
@@ -49,11 +50,16 @@ const code = `function App() {
   const ref = useRef(null);
 
   const Item = styled.div\`
-    width: 550px;
-    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: calc(100% / 2);
+    height: 100px;
+    font-family: Signika;
+    font-weight: bold;
     font-size: 1.5em;
-    text-align: center;
-    background-color: green;
+    border: solid 3px black;
+    background-color: #61DAFB;
   \`;
 
   return (

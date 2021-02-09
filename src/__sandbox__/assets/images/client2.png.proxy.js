@@ -1,0 +1,1 @@
+export default "/src/__sandbox__/assets/images/client2.png";

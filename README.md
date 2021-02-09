@@ -24,7 +24,12 @@ It supports all types of JSX elements, so you don't have to worry about compatib
 
 ## Table of contents
 
--   [How to use?](#how-to-use)
+- [How to use?](#how-to-use)
+- [Props](#props)
+- [Contribute](#contribute)
+- [Issues](#issues)
+
+
 
 ## How to use?
 
@@ -59,3 +64,28 @@ export const Component: React.FC<CustomersProps> = ({ customers }) => {
 ```
 
 4. Create a ref pointing at your outermost item inside of the rerousel and include it in the Rerousel as **"itemRef"** prop.
+You can also determine the interval using **"interval"** prop in **milliseconds**, but you don't have to - default value is **3 seconds**.
+
+## Props
+
+| Prop | Type | Default | Required? | Description |
+| --- | --- | --- | --- | --- |
+| **itemRef** | *RefObject<HTMLElement>* | `undefined` | Yes | Reference to the outermost item of carousel - used to retrieve information about item's width |
+| **value**| *Number* | `3000` | No | Interval length in milliseconds |
+
+## Contribute
+
+1.  Fork this repo
+2.  Create your feature branch: git checkout -b feature-name
+3.  Commit your changes: git commit -am 'Add some feature'
+4.  Push to the branch: git push origin my-new-feature
+5.  Submit a pull request
+
+
+## Example - testimonials carousel
+
+![Testimonials](https://s2.gifyu.com/images/rerousel-example.gif)
+
+## Issues
+
+If you encounter any issues when using **Rerousel** package, please add a new issue - we will get to it as fast as it's possible.

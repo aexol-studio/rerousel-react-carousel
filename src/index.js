@@ -27,7 +27,6 @@ export const Rerousel = ({children, itemRef, interval = 3e3}) => {
   const cc = Children.count(children);
   function useWidth(elementRef) {
     const [width, setWidth] = useState(0);
-    console.log(width);
     const updateWidth = useCallback(() => {
       if (elementRef && elementRef.current) {
         const {width: width2} = elementRef.current.getBoundingClientRect();

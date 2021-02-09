@@ -1,11 +1,12 @@
 {
     "name": "rerousel",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "React carousel",
     "main": "lib/index.js",
     "private": false,
     "scripts": {
         "test": "jest",
+        "deploy": "gh-pages -d build",
         "test:watch": "jest --watch",
         "start": "snowpack dev --polyfill-node",
         "build:sandbox": "snowpack build --polyfill-node",
@@ -41,6 +42,7 @@
         "eslint-config-prettier": "^7.1.0",
         "eslint-plugin-prettier": "^3.3.1",
         "eslint-plugin-react": "^7.22.0",
+        "gh-pages": "^3.1.0",
         "jest": "^26.6.3",
         "prettier": "^2.2.1",
         "react": "^17.0.1",

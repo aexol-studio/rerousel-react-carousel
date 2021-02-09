@@ -5,7 +5,7 @@ const Container = style({
   display: "flex",
   flexFlow: "row wrap",
   justifyContent: "space-between",
-  margin: "40px auto",
+  margin: "70px auto",
   maxWidth: "1100px"
 }, media({maxWidth: 1150}, {margin: "40px auto"}));
 const Column = style({

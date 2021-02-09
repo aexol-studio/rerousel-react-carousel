@@ -3,6 +3,9 @@ import {style, media} from "../../../_snowpack/pkg/typestyle.js";
 import NpmSvg from "../assets/svg/NpmSvg.js";
 import GithubSvg from "../assets/svg/GithubSvg.js";
 const Container = style({
+  position: "fixed",
+  zIndex: "999",
+  width: "100%",
   height: "70px",
   backgroundColor: "#20232A"
 });
@@ -18,25 +21,33 @@ const Logo = style({
   fontFamily: "Raleway, sans-serif",
   fontWeight: "bold",
   fontSize: "25px",
-  color: "#FFF"
+  color: "#FFF",
+  transition: "0.3s",
+  $nest: {
+    "&:hover": {
+      color: "#61DAFB"
+    }
+  }
+});
+const ToTop = style({
+  textDecoration: "none"
 });
 const Links = style({
   height: "100%",
   display: "flex",
   alignItems: "center"
 });
-const Icon = style({
-  width: "20px",
-  margin: "10px"
-});
 export const Navbar = () => {
   return /* @__PURE__ */ React.createElement("div", {
     className: Container
   }, /* @__PURE__ */ React.createElement("div", {
     className: Navigation
+  }, /* @__PURE__ */ React.createElement("a", {
+    className: ToTop,
+    href: "#"
   }, /* @__PURE__ */ React.createElement("h1", {
     className: Logo
-  }, "REROUSEL"), /* @__PURE__ */ React.createElement("div", {
+  }, "REROUSEL")), /* @__PURE__ */ React.createElement("div", {
     className: Links
   }, /* @__PURE__ */ React.createElement("a", {
     href: "https://www.npmjs.com/package/rerousel"

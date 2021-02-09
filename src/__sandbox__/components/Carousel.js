@@ -1,27 +1,34 @@
 import React, {useRef} from "../../../_snowpack/pkg/react.js";
 import {Rerousel} from "../../index.js";
 import {wordCarouselItems} from "../assets/data.js";
-import {style, media} from "../../../_snowpack/pkg/typestyle.js";
+import {style} from "../../../_snowpack/pkg/typestyle.js";
 import styled from "../../../_snowpack/pkg/styled-components.js";
 export const Carousel = () => {
   const wordsCarouselRef = useRef(null);
   const WordsCarousel = style({
     backgroundColor: "#20232A",
-    color: "#FFF"
+    color: "#FFF",
+    padding: "0 20%",
+    margin: "auto"
   });
-  const CarouselItem = style({
-    display: "flex",
-    justifyContent: "center",
-    width: "calc(100% / 4)",
-    fontSize: "13px",
-    fontFamily: "Raleway, sans-serif"
-  }, media({maxWidth: 1400}, {width: "calc(100% / 3)"}), media({maxWidth: 1e3}, {width: "calc(100% / 2)"}), media({maxWidth: 700}, {width: "100%"}));
   const Item = styled.div`
         display: flex;
         justify-content: center;
-        width: calc(100% / 3);
+        width: calc(100% / 4);
         font-size: 13px;
         font-family: Raleway, sans-serif;
+
+        @media (max-width: 1400px) {
+            width: calc(100% / 3);
+        }
+
+        @media (max-width: 1000px) {
+            width: calc(100% / 2);
+        }
+
+        @media (max-width: 700px) {
+            width: 100%;
+        }
     `;
   return /* @__PURE__ */ React.createElement("div", {
     className: WordsCarousel
