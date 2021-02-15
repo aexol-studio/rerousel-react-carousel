@@ -1,19 +1,22 @@
 import React, { useRef } from 'react';
 import { Rerousel } from '@/index';
 import { wordCarouselItems } from '@/__sandbox__/assets/data';
-
-import { style } from 'typestyle';
 import styled from 'styled-components';
 
 export const Carousel = () => {
     const wordsCarouselRef = useRef(null);
 
-    const WordsCarousel = style({
-        backgroundColor: '#20232A',
-        color: '#FFF',
-        padding: '0 20%',
-        margin: 'auto',
-    });
+    const WordsCarouselBackground = styled.div`
+        background-color: #20232a;
+        width: 100%;
+    `;
+
+    const WordsCarousel = styled.div`
+        background-color: #20232a;
+        color: white;
+        max-width: 1150px;
+        margin: auto;
+    `;
 
     const Item = styled.div`
         display: flex;
@@ -36,18 +39,20 @@ export const Carousel = () => {
     `;
 
     return (
-        <div className={WordsCarousel}>
-            <Rerousel itemRef={wordsCarouselRef} interval={2000}>
-                {wordCarouselItems.map((item, idx) => {
-                    return (
-                        <Item ref={wordsCarouselRef} key={idx}>
-                            <div className="item_gif">
-                                <h1 className="item__header">{item}</h1>
-                            </div>
-                        </Item>
-                    );
-                })}
-            </Rerousel>
-        </div>
+        <WordsCarouselBackground>
+            <WordsCarousel>
+                <Rerousel itemRef={wordsCarouselRef} interval={2000}>
+                    {wordCarouselItems.map((item, idx) => {
+                        return (
+                            <Item ref={wordsCarouselRef} key={idx}>
+                                <div>
+                                    <h1>{item}</h1>
+                                </div>
+                            </Item>
+                        );
+                    })}
+                </Rerousel>
+            </WordsCarousel>
+        </WordsCarouselBackground>
     );
 };

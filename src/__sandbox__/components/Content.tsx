@@ -6,29 +6,30 @@ import { Rerousel } from '@/index';
 import oceanic from 'prism-react-renderer/themes/oceanicNext';
 import { LiveProvider, LiveEditor, LiveError, LivePreview } from 'react-live';
 
-const EditorContainer = style(
-    {
-        width: '1100px',
-        height: '500px',
-        margin: 'auto',
-        borderRadius: '10px',
-        overflowY: 'auto',
-        maxHeight: 'calc(100% - 50px)',
-    },
-    media({ maxWidth: 1150 }, { width: '90%' }),
-);
+const EditorContainer = styled.div`
+    width: 1100px;
+    height: 500px;
+    margin: auto;
+    border-radius: 10px;
+    overflow-y: auto;
+    max-height: calc(100% - 50px);
 
-const EditorHeader = style({
-    height: '50px',
-    backgroundColor: '#20232A',
-    borderRadius: '10px 10px 0 0',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    color: 'white',
-    fontFamily: 'Raleway, sans-serif',
-    fontWeight: 'bold',
-});
+    @media (max-width: 1150px) {
+        width: 90%;
+    }
+`;
+
+const EditorHeader = styled.div`
+    height: 50px;
+    background-color: #20232a;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-family: Raleway, sans-serif;
+    font-weight: bold;
+`;
 
 const Editor = style({
     width: '100%',
@@ -36,27 +37,28 @@ const Editor = style({
     borderRadius: '0 0 10px 10px',
 });
 
-const PreviewContainer = style(
-    {
-        backgroundColor: 'white',
-        width: '1100px',
-        margin: '50px auto',
-        borderRadius: '10px',
-    },
-    media({ maxWidth: 1150 }, { width: '90%' }),
-);
+const PreviewContainer = styled.div`
+    background-color: white;
+    width: 1100px;
+    margin: 50px auto;
+    border-radius: 10px;
 
-const PreviewHeader = style({
-    height: '50px',
-    backgroundColor: 'gray',
-    borderRadius: '10px 10px 0 0',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    color: 'white',
-    fontFamily: 'Raleway, sans-serif',
-    fontWeight: 'bold',
-});
+    @media (max-width: 1150px) {
+        width: 90%;
+    }
+`;
+
+const PreviewHeader = styled.div`
+    height: 50px;
+    background-color: gray;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-family: Raleway, sans-serif;
+    font-weight: bold;
+`;
 
 const scope = { Rerousel, useRef, styled };
 
@@ -72,38 +74,32 @@ const code = `function App() {
     font-family: Signika;
     font-weight: bold;
     font-size: 1.5em;
-    border: solid 3px black;
+    border: solid 1px black;
     background-color: #61DAFB;
   \`;
 
   return (
-    <div>
-      <header>
-        
-        <Rerousel itemRef={ref}>
-          <Item ref={ref}>1</Item>
-          <Item>2</Item>
-          <Item>3</Item>
-          <Item>4</Item>
-          <Item>5</Item>
-        </Rerousel>
-        
-      </header>
-    </div>
+    <Rerousel itemRef={ref}>
+      <Item ref={ref}>1</Item>
+      <Item>2</Item>
+      <Item>3</Item>
+      <Item>4</Item>
+      <Item>5</Item>
+    </Rerousel>
   );
 }`;
 
 export const Content = () => {
     return (
         <LiveProvider scope={scope} theme={oceanic} code={code}>
-            <div className={EditorContainer}>
-                <header className={EditorHeader}>REROUSEL SANDBOX</header>
+            <EditorContainer>
+                <EditorHeader>REROUSEL SANDBOX</EditorHeader>
                 <LiveEditor className={Editor} />
-            </div>
-            <div className={PreviewContainer}>
-                <header className={PreviewHeader}>REROUSEL PREVIEW</header>
+            </EditorContainer>
+            <PreviewContainer>
+                <PreviewHeader>REROUSEL PREVIEW</PreviewHeader>
                 <LivePreview />
-            </div>
+            </PreviewContainer>
         </LiveProvider>
     );
 };
