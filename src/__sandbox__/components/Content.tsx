@@ -1,19 +1,22 @@
 import React, { useRef } from 'react';
 
-import { style } from 'typestyle';
+import { style, media } from 'typestyle';
 import styled from 'styled-components';
 import { Rerousel } from '@/index';
 import oceanic from 'prism-react-renderer/themes/oceanicNext';
 import { LiveProvider, LiveEditor, LiveError, LivePreview } from 'react-live';
 
-const EditorContainer = style({
-    width: '1100px',
-    height: '500px',
-    margin: 'auto',
-    borderRadius: '10px',
-    overflowY: 'auto',
-    maxHeight: 'calc(100% - 50px)',
-});
+const EditorContainer = style(
+    {
+        width: '1100px',
+        height: '500px',
+        margin: 'auto',
+        borderRadius: '10px',
+        overflowY: 'auto',
+        maxHeight: 'calc(100% - 50px)',
+    },
+    media({ maxWidth: 1150 }, { width: '90%' }),
+);
 
 const EditorHeader = style({
     height: '50px',
@@ -33,12 +36,15 @@ const Editor = style({
     borderRadius: '0 0 10px 10px',
 });
 
-const PreviewContainer = style({
-    backgroundColor: 'white',
-    width: '1100px',
-    margin: '50px auto',
-    borderRadius: '10px',
-});
+const PreviewContainer = style(
+    {
+        backgroundColor: 'white',
+        width: '1100px',
+        margin: '50px auto',
+        borderRadius: '10px',
+    },
+    media({ maxWidth: 1150 }, { width: '90%' }),
+);
 
 const PreviewHeader = style({
     height: '50px',
