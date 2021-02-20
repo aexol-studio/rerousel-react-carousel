@@ -1,3 +1,4 @@
+import { element } from 'prop-types';
 import React, { useEffect, useCallback, useState, useRef, Children, RefObject } from 'react';
 import { style } from 'typestyle';
 
@@ -45,8 +46,25 @@ export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval 
             }
         }, [elementRef]);
 
+        const firstUpdateWidth = useCallback(() => {
+            if (elementRef && elementRef.current) {
+                let { width } = elementRef.current.getBoundingClientRect();
+                width =
+                    width -
+                    parseInt(window.getComputedStyle(elementRef.current).getPropertyValue('border-left-width')) -
+                    parseInt(window.getComputedStyle(elementRef.current).getPropertyValue('border-right-width'));
+
+                width =
+                    width -
+                    parseInt(window.getComputedStyle(elementRef.current).getPropertyValue('padding-left')) -
+                    parseInt(window.getComputedStyle(elementRef.current).getPropertyValue('padding-right'));
+
+                setWidth(width);
+            }
+        }, [elementRef]);
+
         useEffect(() => {
-            updateWidth();
+            firstUpdateWidth();
             window.addEventListener('resize', updateWidth);
             return () => {
                 window.removeEventListener('resize', updateWidth);

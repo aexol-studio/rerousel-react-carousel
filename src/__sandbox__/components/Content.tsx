@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 
-import { style, media } from 'typestyle';
+import { style } from 'typestyle';
 import styled from 'styled-components';
 import { Rerousel } from '@/index';
 import oceanic from 'prism-react-renderer/themes/oceanicNext';
@@ -8,15 +8,18 @@ import { LiveProvider, LiveEditor, LiveError, LivePreview } from 'react-live';
 
 const EditorContainer = styled.div`
     width: 1100px;
-    height: 500px;
     margin: auto;
     border-radius: 10px;
-    overflow-y: auto;
-    max-height: calc(100% - 50px);
 
     @media (max-width: 1150px) {
         width: 90%;
     }
+`;
+
+const EditorScrollable = styled.div`
+    height: 500px;
+    max-height: calc(100% - 50px);
+    overflow-y: auto;
 `;
 
 const EditorHeader = styled.div`
@@ -36,6 +39,17 @@ const Editor = style({
     fontSize: '14px',
     borderRadius: '0 0 10px 10px',
 });
+
+const ErrorContainer = styled.div`
+    width: 1100px;
+    margin: auto;
+    border-radius: 10px;
+    color: red;
+
+    @media (max-width: 1150px) {
+        width: 90%;
+    }
+`;
 
 const PreviewContainer = styled.div`
     background-color: white;
@@ -69,13 +83,17 @@ const code = `function App() {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: calc(100% / 2);
+    width: calc(100%/2);
     height: 100px;
     font-family: Signika;
     font-weight: bold;
     font-size: 1.5em;
     border: solid 1px black;
     background-color: #61DAFB;
+    
+    @media(max-width: 1150px) {
+        width: 100%
+    }
   \`;
 
   return (
@@ -94,8 +112,14 @@ export const Content = () => {
         <LiveProvider scope={scope} theme={oceanic} code={code}>
             <EditorContainer>
                 <EditorHeader>REROUSEL SANDBOX</EditorHeader>
-                <LiveEditor className={Editor} />
+                <EditorScrollable>
+                    <LiveEditor className={Editor} />
+                </EditorScrollable>
             </EditorContainer>
+            <ErrorContainer>
+                <LiveError />
+            </ErrorContainer>
+
             <PreviewContainer>
                 <PreviewHeader>REROUSEL PREVIEW</PreviewHeader>
                 <LivePreview />
