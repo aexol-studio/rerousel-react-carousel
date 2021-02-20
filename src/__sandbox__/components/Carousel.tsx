@@ -41,7 +41,7 @@ export const Carousel = () => {
     return (
         <WordsCarouselBackground>
             <WordsCarousel>
-                <Rerousel itemRef={wordsCarouselRef} interval={2000}>
+                <Rerousel itemRef={wordsCarouselRef} interval={3000}>
                     {wordCarouselItems.map((item, idx) => {
                         return (
                             <Item ref={wordsCarouselRef} key={idx}>

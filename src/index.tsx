@@ -1,4 +1,3 @@
-import { element } from 'prop-types';
 import React, { useEffect, useCallback, useState, useRef, Children, RefObject } from 'react';
 import { style } from 'typestyle';
 
