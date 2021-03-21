@@ -72,6 +72,7 @@ export const Component: React.FC<CustomersProps> = ({ customers }) => {
 | ----------- | ------------------------ | ----------- | --------- | --------------------------------------------------------------------------------------------- |
 | **itemRef** | _RefObject<HTMLElement>_ | `undefined` | Yes       | Reference to the outermost item of carousel - used to retrieve information about item's width |
 | **value**   | _Number_                 | `3000`      | No        | Interval length in milliseconds                                                               |
+| **stop**   | _Boolean_                 | `false`      | No        | Should the carousel stop?                                                            |
 
 ## Contribute
 
