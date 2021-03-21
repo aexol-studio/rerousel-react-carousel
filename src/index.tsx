@@ -5,6 +5,7 @@ interface RerouselProps {
     itemWidth?: number;
     itemRef: RefObject<HTMLElement>;
     interval?: number;
+    stop?: boolean;
 }
 
 const wrapper = style({
@@ -28,7 +29,7 @@ const wrapper = style({
     },
 });
 
-export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval = 3000 }) => {
+export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval = 3000, stop = false }) => {
     const [itemWidth] = useWidth(itemRef);
     const [, setScrollInterval] = useState<NodeJS.Timeout>();
     const [currentScrollLeft, setCurrentScrollLeft] = useState<number>(0);
@@ -93,10 +94,13 @@ export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval 
     }, [currentScrollLeft, itemWidth]);
 
     useEffect(() => {
-        const i = setInterval(() => {
-            setCurrentScrollLeft((csl) => csl + 1);
-        }, interval);
-        setScrollInterval(i);
+        if(!stop){
+            const i = setInterval(() => {
+                setCurrentScrollLeft((csl) => csl + 1);
+            }, interval);
+            setScrollInterval(i);
+        }
+      
         return () => {
             setScrollInterval((i) => {
                 if (i) {
@@ -105,7 +109,7 @@ export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval 
                 return undefined;
             });
         };
-    }, [itemWidth]);
+    }, [itemWidth, interval, stop]);
 
     return (
         <div className={wrapper} ref={wrapperRef}>

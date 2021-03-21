@@ -1,8 +1,8 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Rerousel } from '@/index';
 import styled from 'styled-components';
-
 import { clientCarouselItems as clients } from '../assets/data';
+import { media, style } from 'typestyle';
 
 const Background = styled.div`
     max-width: 1150px;
@@ -77,13 +77,110 @@ const Paragraph = styled.p`
     line-height: 22px;
 `;
 
+const Button = style(
+    {
+        height: '60px',
+        width: '200px',
+        backgroundColor: 'transparent',
+        border: '4px solid #61DAFB',
+        borderRadius: '10px',
+        fontFamily: 'Signika, sans-serif',
+        color: '#000',
+        fontSize: '18px',
+        fontWeight: 'lighter',
+        transition: '0.5s',
+        marginTop: '20px',
+        cursor: 'pointer',
+        marginBottom: '30px',
+        $nest: {
+            '&:hover': {
+                backgroundColor: '#61DAFB',
+            }
+        }
+    },
+    media({ maxWidth: 800 }, {  marginTop: '10px', height: '50px', width: '200px', fontSize: '15px',
+}),
+);
+
+
+const ButtonTwo = style(
+    {
+        height: '60px',
+        width: '100px',
+        backgroundColor: 'transparent',
+        border: '4px solid black',
+        borderRadius: '10px',
+        fontFamily: 'Signika, sans-serif',
+        color: '#000',
+        fontSize: '18px',
+        fontWeight: 'lighter',
+        transition: '0.5s',
+        marginTop: '20px',
+        cursor: 'pointer',
+        marginBottom: '30px',
+        $nest: {
+            '&:hover': {
+                backgroundColor: 'black',
+                color: 'white'
+            }
+        }
+    },
+    media({ maxWidth: 800 }, {  marginTop: '10px', height: '50px', width: '200px', fontSize: '15px',
+}),
+);
+
+const Input = styled.input`
+    margin-top: 20px;
+    padding: 10px 50px;
+    width: 350px;
+    border: 2px solid black;
+    box-sizing: border-box;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    font-family: Raleway, sans-serif;
+    font-variant-numeric: lining-nums;
+    letter-spacing: 2px;
+
+    /* Chrome, Safari, Edge, Opera */
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* Firefox */
+    &[type=number] {
+        -moz-appearance: textfield;
+    }
+`;
+
+const ButtonContainer = styled.div`
+    display: flex;
+    width: 350px;
+    justify-content: space-between;
+`;
+
+const ControllerHolder = styled.div`
+    font-family: Raleway, sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+`;
+
 export const Clients = () => {
+    const [inputValue, setInputValue] = useState<number>();
+    const [carouselInterval, setCarouselInterval] = useState<number>(3000);
+    const [carouselStop, setCarouselStop] = useState<boolean>(false);
     const outermostItemRef = useRef(null);
 
     return (
         <Background>
             <Header>Testimonials carousel</Header>
-            <Rerousel itemRef={outermostItemRef} interval={4000}>
+            <Rerousel itemRef={outermostItemRef} interval={carouselInterval} stop={carouselStop}>
                 {clients.map((c) => {
                     console.log(c.image);
                     return (
@@ -100,6 +197,14 @@ export const Clients = () => {
                     );
                 })}
             </Rerousel>
+            <ControllerHolder>
+                Set custom interval:
+                <Input type="number" onChange={e => setInputValue(parseInt(e.currentTarget.value))}/>
+                <ButtonContainer>
+                    <button className={Button} onClick={() => setCarouselInterval(inputValue!)}>Change interval</button>
+                    <button className={ButtonTwo} onClick={() => setCarouselStop(!carouselStop)}>{carouselStop ? 'Turn ON' : 'Turn OFF'}</button>
+                </ButtonContainer>
+            </ControllerHolder>
         </Background>
     );
 };
