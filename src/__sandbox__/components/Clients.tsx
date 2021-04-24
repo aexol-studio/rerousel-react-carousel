@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { Rerousel } from '@/index';
 import styled from 'styled-components';
-import { clientCarouselItems as clients } from '../assets/data';
+import { Rerousel } from '@/index';
 import { media, style } from 'typestyle';
+import { clientCarouselItems as clients } from '../assets/data';
 
 const Background = styled.div`
     max-width: 1150px;
@@ -95,13 +95,11 @@ const Button = style(
         $nest: {
             '&:hover': {
                 backgroundColor: '#61DAFB',
-            }
-        }
+            },
+        },
     },
-    media({ maxWidth: 800 }, {  marginTop: '10px', height: '50px', width: '200px', fontSize: '15px',
-}),
+    media({ maxWidth: 800 }, { marginTop: '10px', height: '50px', width: '200px', fontSize: '15px' }),
 );
-
 
 const ButtonTwo = style(
     {
@@ -121,12 +119,11 @@ const ButtonTwo = style(
         $nest: {
             '&:hover': {
                 backgroundColor: 'black',
-                color: 'white'
-            }
-        }
+                color: 'white',
+            },
+        },
     },
-    media({ maxWidth: 800 }, {  marginTop: '10px', height: '50px', width: '200px', fontSize: '15px',
-}),
+    media({ maxWidth: 800 }, { marginTop: '10px', height: '50px', width: '200px', fontSize: '15px' }),
 );
 
 const Input = styled.input`
@@ -150,7 +147,7 @@ const Input = styled.input`
     }
 
     /* Firefox */
-    &[type=number] {
+    &[type='number'] {
         -moz-appearance: textfield;
     }
 `;
@@ -199,10 +196,14 @@ export const Clients = () => {
             </Rerousel>
             <ControllerHolder>
                 Set custom interval:
-                <Input type="number" onChange={e => setInputValue(parseInt(e.currentTarget.value))}/>
+                <Input type="number" onChange={(e) => setInputValue(parseInt(e.currentTarget.value))} />
                 <ButtonContainer>
-                    <button className={Button} onClick={() => setCarouselInterval(inputValue!)}>Change interval</button>
-                    <button className={ButtonTwo} onClick={() => setCarouselStop(!carouselStop)}>{carouselStop ? 'Turn ON' : 'Turn OFF'}</button>
+                    <button className={Button} onClick={() => setCarouselInterval(inputValue!)}>
+                        Change interval
+                    </button>
+                    <button className={ButtonTwo} onClick={() => setCarouselStop(!carouselStop)}>
+                        {carouselStop ? 'Turn ON' : 'Turn OFF'}
+                    </button>
                 </ButtonContainer>
             </ControllerHolder>
         </Background>

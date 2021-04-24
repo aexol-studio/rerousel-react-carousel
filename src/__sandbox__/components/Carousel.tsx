@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
+import styled from 'styled-components';
 import { Rerousel } from '@/index';
 import { wordCarouselItems } from '@/__sandbox__/assets/data';
-import styled from 'styled-components';
 
 export const Carousel = () => {
     const wordsCarouselRef = useRef(null);

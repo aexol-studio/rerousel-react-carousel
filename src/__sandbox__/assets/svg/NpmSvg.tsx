@@ -21,10 +21,10 @@ const NpmSvg = () => {
             viewBox="0 0 233 91"
             xmlns="http://www.w3.org/2000/svg"
         >
-            <g clip-path="url(#clip0)">
+            <g clipPath="url(#clip0)">
                 <path
-                    fill-rule="evenodd"
-                    clip-rule="evenodd"
+                    fillRule="evenodd"
+                    clipRule="evenodd"
                     d="M104.064 64.8712V77.9807H78.0259V13.1094H129.743V64.8712H104.064ZM116.678 26.1287H104.065V51.8069H116.678V26.1287Z"
                 />
                 <path d="M38.7427 64.8712V26.1287H51.8071V64.8712H64.8714V13.1094H13.1592V64.8712H38.7427Z" />

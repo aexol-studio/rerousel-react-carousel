@@ -1,8 +1,7 @@
 import React, { useRef } from 'react';
-
-import { style } from 'typestyle';
 import styled from 'styled-components';
 import { Rerousel } from '@/index';
+import { style } from 'typestyle';
 import oceanic from 'prism-react-renderer/themes/oceanicNext';
 import { LiveProvider, LiveEditor, LiveError, LivePreview } from 'react-live';
 

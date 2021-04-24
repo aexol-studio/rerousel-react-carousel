@@ -20,7 +20,7 @@ const Copyright = styled.a`
 export const Footer = () => {
     return (
         <Container>
-            <Copyright href="https://aexol.com/">Aexol - Innovative Software Development studio © 2020</Copyright>
+            <Copyright href="https://aexol.com/">Aexol - Innovative Software Development studio © 2021</Copyright>
         </Container>
     );
 };
