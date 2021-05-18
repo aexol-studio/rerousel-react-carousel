@@ -12,6 +12,7 @@ const wrapper = style({
     display: 'flex',
     alignItems: 'center',
     overflowX: 'scroll',
+    height: '100%',
     scrollSnapType: 'x mandatory',
     '-webkit-overflow-scrolling': 'touch',
     flexFlow: 'row nowrap',
@@ -94,13 +95,13 @@ export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval 
     }, [currentScrollLeft, itemWidth]);
 
     useEffect(() => {
-        if(!stop){
+        if (!stop) {
             const i = setInterval(() => {
                 setCurrentScrollLeft((csl) => csl + 1);
             }, interval);
             setScrollInterval(i);
         }
-      
+
         return () => {
             setScrollInterval((i) => {
                 if (i) {
