@@ -1,6 +1,4 @@
-[![Rerousel logo](https://svgshare.com/i/TUi.svg)](https://rerousel.netlify.app/)
-
-![Rerousel gif](https://s2.gifyu.com/images/rerousel3.gif)
+[![Rerousel logo](https://user-images.githubusercontent.com/31045802/154013198-facc1f6e-446e-477c-8d5b-19ded1c20a5e.svg)](https://rerousel.netlify.app/)
 
 [![npm](https://img.shields.io/npm/v/rerousel.svg?style=flat-square)](https://www.npmjs.com/package/rerousel) [ ![npm downloads](https://img.shields.io/npm/dt/rerousel.svg?style=flat-square)](https://www.npmjs.com/package/rerousel)
 
@@ -81,10 +79,6 @@ export const Component: React.FC<CustomersProps> = ({ customers }) => {
 3.  Commit your changes: git commit -am 'Add some feature'
 4.  Push to the branch: git push origin my-new-feature
 5.  Submit a pull request
-
-## Example - testimonials carousel
-
-![Testimonials](https://s2.gifyu.com/images/rerousel-example.gif)
 
 ## Issues
 
