@@ -1,21 +1,18 @@
-[![Rerousel logo](https://user-images.githubusercontent.com/31045802/154013198-facc1f6e-446e-477c-8d5b-19ded1c20a5e.svg)](https://rerousel.netlify.app/)
+<a href="https://rerousel.netlify.app/">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/aexol-studio/rerousel-react-carousel/blob/ffa8b18fb54751bc09377eedbb72d29f29c8e6ee/src/__sandbox__/assets/images/RerouselLogoDark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/aexol-studio/rerousel-react-carousel/blob/ffa8b18fb54751bc09377eedbb72d29f29c8e6ee/src/__sandbox__/assets/images/RerouselLogoLight.svg">
+  <img alt="Rerousel">    
+</picture>
+</a>
 
 [![npm](https://img.shields.io/npm/v/rerousel.svg?style=flat-square)](https://www.npmjs.com/package/rerousel) [ ![npm downloads](https://img.shields.io/npm/dt/rerousel.svg?style=flat-square)](https://www.npmjs.com/package/rerousel)
 
-### Rerousel is the simplest and the lightest infinite carousel package made for React.
-
-### Simple
-
-Set up your carousel in the blink of an eye. You only have to install the package - the component setup is effortless!
-
-### Lightweight
-
-Rerousel is the lightest working infinite react carousel available to download from the NPM, using only the packages that are necessary. You don’t have to worry about thousands of dependencies flooding your application!
-
-### Versatile
-
-Either you want to show off your products, customers or even holiday pictures - Rerousel is there for you.
-It supports all types of JSX elements, so you don't have to worry about compatibility.
+### Rerousel - the simplest and lightest infinite carousel package made for React.
+ - Simple: Need a carousel component for your website or app? Tired of looking for something decent on Codepen? With Rerousel you can set it up in the blink of an eye!
+ - Lightweight: Rerousel is the lightest infinite React carousel available for download from NPM because it uses only a couple of vital packages. You don’t have to worry about thousands of dependencies flooding your application!
+ - Versatile: Whether you want to show off your products, brag with customer reviews, or even set up a collage of holiday pictures - Rerousel is there for you.
+It supports all types of JSX elements, so you don't have to worry about compatibility. It doesn't have to be an infinite carousel - you can simply set up a custom stop point using the `stop` prop.
 
 ## Table of contents
 
@@ -27,23 +24,23 @@ It supports all types of JSX elements, so you don't have to worry about compatib
 
 ## Live demo
 
-You can check out the Rerousel sandbox [HERE](https://rerousel.netlify.app/)
+You can play around with Rerousel sandbox by checking out [the live demo here](https://rerousel.netlify.app/)
 
 ## How to use?
 
-1. Install the package using npm
+1. Install the package using this npm command:
 
 ```
 npm install rerousel
 ```
 
-2. Import rerousel in the component you want to use it
+2. Import Rerousel at the top of the component you want to use it in:
 
 ```tsx
 import { Rerousel } from 'rerousel';
 ```
 
-3. Place it in the desired position and fill it with the items you want to showcase
+3. Place it in the desired position in the html tree and fill it with the items you want to showcase
 
 ```tsx
 export const Component: React.FC<CustomersProps> = ({ customers }) => {
@@ -61,14 +58,14 @@ export const Component: React.FC<CustomersProps> = ({ customers }) => {
 };
 ```
 
-4. Create a ref pointing at your outermost item inside of the rerousel and include it in the Rerousel as **"itemRef"** prop.
-   You can also determine the interval using **"interval"** prop in **milliseconds**, but you don't have to - default value is **3 seconds**.
+4. Create a ref pointing to your outermost item inside of the Rerousel and include it in Rerousel as an `itemRef` prop.
+   You can also determine the interval using the `interval` prop in **milliseconds**, but you don't have to - the default value is **3 seconds**.
 
 ## Props
 
 | Prop         | Type                     | Default     | Required? | Description                                                                                   |
 | ------------ | ------------------------ | ----------- | --------- | --------------------------------------------------------------------------------------------- |
-| **itemRef**  | _RefObject<HTMLElement>_ | `undefined` | Yes       | Reference to the outermost item of carousel - used to retrieve information about item's width |
+| **itemRef**  | _RefObject<HTMLElement>_ | `undefined` | Yes       | Reference to the outermost item of the carousel - used to retrieve information about the item's total width |
 | **interval** | _Number_                 | `3000`      | No        | Interval length in milliseconds                                                               |
 | **stop**     | _Boolean_                | `false`     | No        | Should the carousel stop?                                                                     |
 
@@ -82,4 +79,4 @@ export const Component: React.FC<CustomersProps> = ({ customers }) => {
 
 ## Issues
 
-If you encounter any issues when using **Rerousel** package, please add a new issue - we will get to it as fast as it's possible.
+If you encounter any issues when using the **Rerousel** package, please add a new issue - we will get to it as fast as it's possible.
