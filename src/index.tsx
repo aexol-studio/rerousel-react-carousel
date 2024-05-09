@@ -6,6 +6,7 @@ interface RerouselProps {
     itemRef: RefObject<HTMLElement>;
     interval?: number;
     stop?: boolean;
+    children?: React.ReactNode;
 }
 
 const wrapper = style({
