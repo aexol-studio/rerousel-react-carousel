@@ -51,7 +51,7 @@ const useWidth = (elementRef: RefObject<HTMLElement>) => {
     return width;
 };
 
-export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval = 3000, stop = false }) => {
+export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval = 500, stop = false }) => {
     const itemWidth = useWidth(itemRef);
     const wrapperRef = useRef<HTMLDivElement>(null);
     const [currentScrollLeft, setCurrentScrollLeft] = useState<number>(0);
@@ -59,7 +59,12 @@ export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval 
 
     const scrollToNextItem = useCallback(() => {
         if (wrapperRef.current && itemWidth) {
-            const nextScrollLeft = currentScrollLeft + 1 > cc ? 0 : currentScrollLeft + 1;
+            let nextScrollLeft = currentScrollLeft + 1;
+            // Ensure we stay within bounds and don't scroll backward
+            if (nextScrollLeft >= cc) {
+                nextScrollLeft = currentScrollLeft; // Prevent scrolling backward
+            }
+
             wrapperRef.current.scrollTo({
                 left: itemWidth * nextScrollLeft,
                 behavior: 'smooth',
