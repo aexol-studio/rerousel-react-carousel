@@ -1,8 +1,8 @@
 {
     "name": "rerousel",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "description": "React carousel",
-    "main": "lib/index.js",
+    "main": "dist/index.js",
     "private": false,
     "scripts": {
         "dev": "vite",

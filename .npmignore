@@ -6,7 +6,7 @@ node_modules
 .module-cache
 *.log*
 build
-dist
+lib
 src
 deploy.sh
 deploy-toolkit.yaml
