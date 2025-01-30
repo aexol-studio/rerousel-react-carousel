@@ -1,8 +1,7 @@
-import React, { useEffect, useCallback, useState, useRef, Children, RefObject } from 'react';
+import React, { useEffect, useState, useRef, RefObject, Children, useCallback } from 'react';
 import { style } from 'typestyle';
 
 interface RerouselProps {
-    itemWidth?: number;
     itemRef: RefObject<HTMLElement>;
     interval?: number;
     stop?: boolean;
@@ -12,22 +11,11 @@ interface RerouselProps {
 const wrapper = style({
     display: 'flex',
     alignItems: 'center',
-    overflowX: 'scroll',
+    overflowX: 'hidden',
     height: '100%',
     scrollSnapType: 'x mandatory',
-    '-webkit-overflow-scrolling': 'touch',
     flexFlow: 'row nowrap',
-    '-ms-overflow-style': 'none',
-    scrollbarWidth: 'none',
-    $nest: {
-        '& > *': {
-            boxSizing: 'border-box',
-            flexShrink: 0,
-        },
-        '&::-webkit-scrollbar': {
-            display: 'none',
-        },
-    },
+    position: 'relative',
 });
 
 const useWidth = (elementRef: RefObject<HTMLElement>) => {
@@ -43,42 +31,42 @@ const useWidth = (elementRef: RefObject<HTMLElement>) => {
     useEffect(() => {
         updateWidth();
         window.addEventListener('resize', updateWidth);
-        return () => {
-            window.removeEventListener('resize', updateWidth);
-        };
+        return () => window.removeEventListener('resize', updateWidth);
     }, [updateWidth]);
 
     return width;
 };
 
-export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval = 500, stop = false }) => {
+export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval = 3000, stop = false }) => {
     const itemWidth = useWidth(itemRef);
     const wrapperRef = useRef<HTMLDivElement>(null);
     const [currentScrollLeft, setCurrentScrollLeft] = useState<number>(0);
-    const cc = Children.count(children);
-
-    const scrollToNextItem = useCallback(() => {
-        if (wrapperRef.current && itemWidth) {
-            let nextScrollLeft = currentScrollLeft + 1;
-            // Ensure we stay within bounds and don't scroll backward
-            if (nextScrollLeft >= cc) {
-                nextScrollLeft = currentScrollLeft; // Prevent scrolling backward
-            }
-
-            wrapperRef.current.scrollTo({
-                left: itemWidth * nextScrollLeft,
-                behavior: 'smooth',
-            });
-            setCurrentScrollLeft(nextScrollLeft);
-        }
-    }, [currentScrollLeft, itemWidth, cc]);
+    const itemCount = Children.count(children);
 
     useEffect(() => {
-        if (!stop) {
-            const intervalId = setInterval(scrollToNextItem, interval);
+        if (!stop && itemWidth) {
+            const intervalId = setInterval(() => {
+                setCurrentScrollLeft((prev) => prev + 1);
+            }, interval);
             return () => clearInterval(intervalId);
         }
-    }, [scrollToNextItem, interval, stop]);
+    }, [interval, stop, itemWidth]);
+
+    useEffect(() => {
+        if (!wrapperRef.current || itemWidth === 0) return;
+
+        wrapperRef.current.scrollTo({
+            left: itemWidth * currentScrollLeft,
+            behavior: 'smooth',
+        });
+
+        if (currentScrollLeft >= itemCount) {
+            setTimeout(() => {
+                wrapperRef.current?.scrollTo({ left: 0, behavior: 'auto' });
+                setCurrentScrollLeft(0);
+            }, 300);
+        }
+    }, [currentScrollLeft, itemWidth, itemCount]);
 
     return (
         <div className={wrapper} ref={wrapperRef}>
