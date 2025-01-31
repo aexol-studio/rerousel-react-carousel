@@ -9,7 +9,7 @@ interface RerouselProps {
     children: React.ReactNode;
 }
 
-const wrapper = style({
+const wrapperStyle = style({
     display: 'flex',
     alignItems: 'center',
     overflowX: 'scroll',
@@ -24,97 +24,64 @@ const wrapper = style({
             boxSizing: 'border-box',
             flexShrink: 0,
         },
-
         '&::-webkit-scrollbar': {
             display: 'none',
         },
     },
 });
 
-export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval = 3000, stop = false }) => {
-    const [itemWidth] = useWidth(itemRef);
-    const [, setScrollInterval] = useState<NodeJS.Timeout>();
-    const [currentScrollLeft, setCurrentScrollLeft] = useState<number>(0);
-    const wrapperRef = useRef<HTMLDivElement>(null);
-    const cc = Children.count(children);
+const useWidth = (elementRef: RefObject<HTMLElement>) => {
+    const [width, setWidth] = useState<number>(0);
 
-    function useWidth(elementRef: RefObject<HTMLElement>) {
-        const [width, setWidth] = useState<number>(0);
-
-        const updateWidth = useCallback(() => {
-            if (elementRef && elementRef.current) {
-                const { width } = elementRef.current.getBoundingClientRect();
-                setWidth(width);
-            }
-        }, [elementRef]);
-
-        const firstUpdateWidth = useCallback(() => {
-            if (elementRef && elementRef.current) {
-                let { width } = elementRef.current.getBoundingClientRect();
-                width =
-                    width -
-                    parseInt(window.getComputedStyle(elementRef.current).getPropertyValue('border-left-width')) -
-                    parseInt(window.getComputedStyle(elementRef.current).getPropertyValue('border-right-width'));
-
-                width =
-                    width -
-                    parseInt(window.getComputedStyle(elementRef.current).getPropertyValue('padding-left')) -
-                    parseInt(window.getComputedStyle(elementRef.current).getPropertyValue('padding-right'));
-
-                setWidth(width);
-            }
-        }, [elementRef]);
-
-        useEffect(() => {
-            firstUpdateWidth();
-            window.addEventListener('resize', updateWidth);
-            return () => {
-                window.removeEventListener('resize', updateWidth);
-            };
-        }, [updateWidth]);
-
-        return [width];
-    }
+    const updateWidth = useCallback(() => {
+        if (elementRef.current) {
+            setWidth(elementRef.current.getBoundingClientRect().width);
+        }
+    }, [elementRef]);
 
     useEffect(() => {
-        if (currentScrollLeft === 0) {
-            wrapperRef.current?.scrollTo({ left: 0 });
-            setCurrentScrollLeft(1);
-            return;
-        }
-        if (currentScrollLeft > cc) {
-            setCurrentScrollLeft(0);
-            return;
-        }
+        updateWidth();
+        window.addEventListener('resize', updateWidth);
+        return () => window.removeEventListener('resize', updateWidth);
+    }, [updateWidth]);
 
-        if (itemWidth != undefined) {
-            wrapperRef.current?.scrollTo({
+    return width;
+};
+
+export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval = 3000, stop = false }) => {
+    const itemWidth = useWidth(itemRef);
+    const [currentScrollLeft, setCurrentScrollLeft] = useState(0);
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    const childCount = Children.count(children);
+
+    useEffect(() => {
+        if (!wrapperRef.current) return;
+
+        if (currentScrollLeft === 0) {
+            wrapperRef.current.scrollTo({ left: 0 });
+            setCurrentScrollLeft(1);
+        } else if (currentScrollLeft > childCount) {
+            setCurrentScrollLeft(0);
+        } else if (itemWidth) {
+            wrapperRef.current.scrollTo({
                 left: itemWidth * currentScrollLeft,
                 behavior: 'smooth',
             });
         }
-    }, [currentScrollLeft, itemWidth]);
+    }, [currentScrollLeft, itemWidth, childCount]);
 
     useEffect(() => {
-        if (!stop) {
-            const i = setInterval(() => {
-                setCurrentScrollLeft((csl) => csl + 1);
-            }, interval);
-            setScrollInterval(i);
-        }
+        if (stop) return;
 
-        return () => {
-            setScrollInterval((i) => {
-                if (i) {
-                    clearInterval(i);
-                }
-                return undefined;
-            });
-        };
-    }, [itemWidth, interval, stop]);
+        const intervalId = setInterval(() => {
+            setCurrentScrollLeft((prev) => prev + 1);
+        }, interval);
+
+        return () => clearInterval(intervalId);
+    }, [interval, stop]);
 
     return (
-        <div className={wrapper} ref={wrapperRef}>
+        <div className={wrapperStyle} ref={wrapperRef}>
             {children}
             {children}
         </div>
