@@ -1,12 +1,12 @@
 {
     "name": "rerousel",
-    "version": "0.2.7",
+    "version": "0.2.8",
     "description": "React carousel",
     "main": "dist/index.js",
     "private": false,
     "scripts": {
         "dev": "vite",
-        "sandbox": "cd __sandbox__ && npm run dev",
+        "sandbox": "cd src/__sandbox__ && npm run dev",
         "build": "tsup src/index.tsx --format esm,cjs --dts",
         "preview": "vite preview",
         "test": "jest",

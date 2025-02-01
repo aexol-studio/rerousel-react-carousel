@@ -1,17 +1,25 @@
-.vscode
-.DS_STORE
-.docz
-.tscache
-node_modules
-.module-cache
+# Ignore source and config files
+src/
+tsconfig.json
+.eslintrc.json
+.prettierrc.json
+.vscode/
+.idea/
+
+# Ignore build artifacts and logs
+node_modules/
+.tscache/
+.module-cache/
 *.log*
-build
-lib
-src
+
+# Ignore platform-specific and temporary files
+.DS_STORE
+.python-version
+
+# Ignore documentation, tests, and deployment scripts
+.docz/
+__test__/
+__mock__/
+__sandbox__/
 deploy.sh
 deploy-toolkit.yaml
-.idea
-__test__
-__mock__
-__sandbox__
-.python-version
