@@ -73,11 +73,25 @@ export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval 
     useEffect(() => {
         if (stop) return;
 
-        const intervalId = setInterval(() => {
-            setCurrentScrollLeft((prev) => prev + 1);
-        }, interval);
+        let intervalId: NodeJS.Timeout;
 
-        return () => clearInterval(intervalId);
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                intervalId = setInterval(() => {
+                    setCurrentScrollLeft((prev) => prev + 1);
+                }, interval);
+            } else {
+                clearInterval(intervalId);
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        handleVisibilityChange();
+
+        return () => {
+            clearInterval(intervalId);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
     }, [interval, stop]);
 
     return (

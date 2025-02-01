@@ -6,6 +6,7 @@
     "private": false,
     "scripts": {
         "dev": "vite",
+        "sandbox": "cd __sandbox__ && npm run dev",
         "build": "tsup src/index.tsx --format esm,cjs --dts",
         "preview": "vite preview",
         "test": "jest",
