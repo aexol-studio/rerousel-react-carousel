@@ -11,6 +11,7 @@ export default defineConfig({
             formats: ['es', 'cjs'],
         },
         rollupOptions: {
+            treeshake: true,
             external: ['react', 'react-dom'],
             output: {
                 globals: {
@@ -20,8 +21,9 @@ export default defineConfig({
             },
         },
         target: 'esnext',
-        minify: 'terser',
-        sourcemap: false,
-        chunkSizeWarningLimit: 500,
+        minify: 'esbuild', // Use esbuild for smaller bundles
+        sourcemap: false, // Remove sourcemaps
+        cssCodeSplit: true, // Remove unused CSS
+        reportCompressedSize: false, // Skip compressed size reporting
     },
 });

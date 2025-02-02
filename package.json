@@ -1,6 +1,6 @@
 {
     "name": "rerousel",
-    "version": "0.2.9",
+    "version": "0.2.10",
     "description": "React carousel",
     "main": "dist/index.js",
     "private": false,
