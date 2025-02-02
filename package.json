@@ -1,15 +1,13 @@
 {
     "name": "rerousel",
-    "version": "0.2.8",
+    "version": "0.2.9",
     "description": "React carousel",
     "main": "dist/index.js",
     "private": false,
     "scripts": {
         "dev": "vite",
-        "sandbox": "cd src/__sandbox__ && npm run dev",
         "build": "tsup src/index.tsx --format esm,cjs --dts",
         "preview": "vite preview",
-        "test": "jest",
         "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix"
     },
     "repository": {
@@ -25,7 +23,6 @@
         "@vitejs/plugin-react": "^4.3.4",
         "eslint": "^7.17.0",
         "eslint-plugin-react": "^7.22.0",
-        "jest": "^26.6.3",
         "prettier": "^2.2.1",
         "tsup": "^8.3.6",
         "typescript": "^4.1.3",

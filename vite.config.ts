@@ -20,6 +20,8 @@ export default defineConfig({
             },
         },
         target: 'esnext',
-        sourcemap: true,
+        minify: 'terser',
+        sourcemap: false,
+        chunkSizeWarningLimit: 500,
     },
 });

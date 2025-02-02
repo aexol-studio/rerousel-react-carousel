@@ -31,12 +31,11 @@ const wrapperStyle = style({
 });
 
 const useWidth = (elementRef: RefObject<HTMLElement>) => {
-    const [width, setWidth] = useState<number>(0);
+    const [width, setWidth] = useState(0);
 
     const updateWidth = useCallback(() => {
-        if (elementRef.current) {
-            setWidth(elementRef.current.getBoundingClientRect().width);
-        }
+        const el = elementRef.current;
+        if (el) setWidth(el.getBoundingClientRect().width);
     }, [elementRef]);
 
     useEffect(() => {
@@ -55,18 +54,16 @@ export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval 
     const childCount = Children.count(children);
 
     useEffect(() => {
-        if (!wrapperRef.current) return;
+        const wrapper = wrapperRef.current;
+        if (!wrapper) return;
 
-        if (currentScrollLeft === 0) {
-            wrapperRef.current.scrollTo({ left: 0 });
+        if (!currentScrollLeft) {
+            wrapper.scrollTo({ left: 0 });
             setCurrentScrollLeft(1);
         } else if (currentScrollLeft > childCount) {
             setCurrentScrollLeft(0);
         } else if (itemWidth) {
-            wrapperRef.current.scrollTo({
-                left: itemWidth * currentScrollLeft,
-                behavior: 'smooth',
-            });
+            wrapper.scrollTo({ left: itemWidth * currentScrollLeft, behavior: 'smooth' });
         }
     }, [currentScrollLeft, itemWidth, childCount]);
 
@@ -77,9 +74,7 @@ export const Rerousel: React.FC<RerouselProps> = ({ children, itemRef, interval 
 
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
-                intervalId = setInterval(() => {
-                    setCurrentScrollLeft((prev) => prev + 1);
-                }, interval);
+                intervalId = setInterval(() => setCurrentScrollLeft((prev) => prev + 1), interval);
             } else {
                 clearInterval(intervalId);
             }
