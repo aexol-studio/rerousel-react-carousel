@@ -3,6 +3,8 @@ import { Rerousel, type RerouselHandle } from 'rerousel';
 import size from '../lib/size.json';
 
 const github = 'https://github.com/aexol-studio/rerousel-react-carousel';
+const source = import.meta.env.VITE_SOURCE_URL || `${github}/tree/master`;
+const sourceFiles = source.replace('/tree/', '/blob/');
 const npm = 'https://www.npmjs.com/package/rerousel';
 const initial = new URLSearchParams(window.location.search);
 const validMode = (value: string | null) => (value === 'interactive' ? 'interactive' : 'posters');
@@ -681,7 +683,7 @@ ${layoutStyles}      <Rerousel
                 Zero runtime dependencies. No CSS import.
               </p>
               <p>Each slide stays mounted once. Your browser does the scrolling.</p>
-              <a href={`${github}/blob/master/scripts/size.mjs`}>
+              <a href={`${sourceFiles}/scripts/size.mjs`}>
                 See how it’s measured <span aria-hidden="true">↗</span>
               </a>
             </div>
@@ -699,7 +701,7 @@ ${layoutStyles}      <Rerousel
                 <p className="compat-note">
                   For React 18.3+ and React 19.
                   <br />
-                  Using 0.x? Read the <a href={`${github}#migrating-from-0x`}>migration guide</a>.
+                  Using 0.x? Read the <a href={`${source}#migrating-from-0x`}>migration guide</a>.
                 </p>
               </div>
               <div className="install-panel">
@@ -821,7 +823,7 @@ ${layoutStyles}      <Rerousel
               <br />
               on repeat.
             </p>
-            <a className="button primary" href={github}>
+            <a className="button primary" href={source}>
               Explore the source <Arrow />
             </a>
           </div>
@@ -832,7 +834,7 @@ ${layoutStyles}      <Rerousel
             <div>
               <a href={github}>GitHub</a>
               <a href={npm}>npm</a>
-              <a href={`${github}/blob/master/LICENSE`}>MIT license</a>
+              <a href={`${sourceFiles}/LICENSE`}>MIT license</a>
               <a href={`${github}/issues`}>Report an issue</a>
             </div>
           </div>
