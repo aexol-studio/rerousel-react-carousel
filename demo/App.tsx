@@ -16,6 +16,7 @@ const defaults = {
   interval: initialInterval >= 1000 && initialInterval <= 6000 ? initialInterval : 3000,
   loop: initial.get('loop') !== 'false',
   stop: initial.get('paused') === 'true',
+  fit: initial.get('fit') === 'true' || (initial.get('fit') !== 'false' && !initial.has('width')),
   width: initialNumber('width', 320, 240, 440),
   gap: initialNumber('gap', 16, 0, 40),
   direction: initial.get('direction') === 'rtl' ? 'rtl' : 'ltr',
@@ -144,6 +145,7 @@ export function App() {
   const [stop, setStop] = useState(defaults.stop);
   const [loop, setLoop] = useState(defaults.loop);
   const [slideWidth, setSlideWidth] = useState(defaults.width);
+  const [fit, setFit] = useState(defaults.fit);
   const [gap, setGap] = useState(defaults.gap);
   const [direction, setDirection] = useState(defaults.direction);
   const [pauseOnHover, setPauseOnHover] = useState(defaults.hover);
@@ -200,7 +202,7 @@ export function App() {
       resize.disconnect();
       element.removeEventListener('scroll', measure);
     };
-  }, [mode, slideWidth, gap, direction]);
+  }, [mode, slideWidth, gap, direction, fit]);
   useEffect(() => {
     const url = new URL(window.location.href);
     url.search = '';
@@ -208,13 +210,16 @@ export function App() {
     if (interval !== 3000) url.searchParams.set('interval', String(interval));
     if (stop) url.searchParams.set('paused', 'true');
     if (!loop) url.searchParams.set('loop', 'false');
-    if (slideWidth !== 320) url.searchParams.set('width', String(slideWidth));
+    if (!fit) {
+      url.searchParams.set('fit', 'false');
+      if (slideWidth !== 320) url.searchParams.set('width', String(slideWidth));
+    }
     if (gap !== 16) url.searchParams.set('gap', String(gap));
     if (direction !== 'ltr') url.searchParams.set('direction', direction);
     if (!pauseOnHover) url.searchParams.set('hover', 'false');
     if (behavior !== 'smooth') url.searchParams.set('behavior', behavior);
     window.history.replaceState(null, '', url);
-  }, [mode, interval, stop, loop, slideWidth, gap, direction, pauseOnHover, behavior]);
+  }, [mode, interval, stop, loop, slideWidth, gap, direction, pauseOnHover, behavior, fit]);
 
   const status = !position.overflow
     ? 'All slides fit'
@@ -236,12 +241,59 @@ export function App() {
     setLoop(true);
     setStop(false);
     setSlideWidth(320);
+    setFit(true);
     setGap(16);
     setDirection('ltr');
     setPauseOnHover(true);
     setBehavior('smooth');
   };
-  const code = `import { useRef, useState } from 'react';\nimport { Rerousel, type RerouselHandle } from 'rerousel';\n\nexport function Gallery() {\n  const carousel = useRef<RerouselHandle>(null);\n  const [paused, setPaused] = useState(${stop});\n\n  return (\n    <section style={{ width: 'min(100%, 1040px)', minWidth: 0 }}>\n      <Rerousel\n        ref={carousel}\n        interval={${interval}}\n        stop={paused}\n        loop={${loop}}\n        pauseOnHover={${pauseOnHover}}\n        behavior="${behavior}"\n        dir="${direction}"\n        aria-label="Selected work"\n        style={{ gap: ${gap} }}\n      >\n        {['Make', 'Something', 'Move', 'Your', 'Own', 'Way'].map((title) => (\n          <article key={title} dir="auto"\n            style={{ width: 'min(${slideWidth}px, calc(100% - 32px))' }}>\n            <h2>{title}</h2>\n          </article>\n        ))}\n      </Rerousel>\n      <button onClick={() => carousel.current?.previous()}>Previous</button>\n      <button onClick={() => carousel.current?.next()}>Next</button>\n      <button onClick={() => setPaused(!paused)}>\n        {paused ? 'Resume autoplay' : 'Pause autoplay'}\n      </button>\n    </section>\n  );\n}`;
+  const layoutStyles = fit
+    ? `      <style>{\`
+        .gallery { container: gallery / inline-size; }
+        .gallery > article { width: 100%; }
+        @container gallery (min-width: 600px) {
+          .gallery > article { width: calc((100% - ${gap}px) / 2); }
+        }
+        @container gallery (min-width: 960px) {
+          .gallery > article { width: calc((100% - ${gap * 2}px) / 3); }
+        }
+      \`}</style>\n`
+    : '';
+  const code = `import { useRef, useState } from 'react';
+import { Rerousel, type RerouselHandle } from 'rerousel';
+
+export function Gallery() {
+  const carousel = useRef<RerouselHandle>(null);
+  const [paused, setPaused] = useState(${stop});
+
+  return (
+    <section style={{ width: 'min(100%, 1040px)', minWidth: 0 }}>
+${layoutStyles}      <Rerousel
+        ref={carousel}
+        interval={${interval}}
+        stop={paused}
+        loop={${loop}}
+        pauseOnHover={${pauseOnHover}}
+        behavior="${behavior}"
+        dir="${direction}"
+        className="gallery"
+        aria-label="Selected work"
+        style={{ gap: ${gap} }}
+      >
+        {['Make', 'Something', 'Move', 'Your', 'Own', 'Way'].map((title) => (
+          <article key={title} dir="auto"${fit ? '' : `\n            style={{ width: 'min(${slideWidth}px, calc(100% - 32px))' }}`}>
+            <h2>{title}</h2>
+          </article>
+        ))}
+      </Rerousel>
+      <button onClick={() => carousel.current?.previous()}>Previous</button>
+      <button onClick={() => carousel.current?.next()}>Next</button>
+      <button onClick={() => setPaused(!paused)}>
+        {paused ? 'Resume autoplay' : 'Pause autoplay'}
+      </button>
+    </section>
+  );
+}`;
 
   return (
     <>
@@ -311,7 +363,10 @@ export function App() {
                 behavior={behavior}
                 dir={direction}
                 className="demo-carousel"
-                style={{ '--slide-width': `${slideWidth}px`, gap } as CSSProperties}
+                data-fit={fit}
+                style={
+                  { '--slide-width': `${slideWidth}px`, '--slide-gap': `${gap}px`, gap } as CSSProperties
+                }
                 aria-label={mode === 'posters' ? 'Typographic poster examples' : 'Interactive React examples'}
                 onPointerEnter={() => setHovered(true)}
                 onPointerLeave={() => setHovered(false)}
@@ -484,6 +539,15 @@ export function App() {
               </div>
               <details className="layout-settings">
                 <summary>Layout & behavior</summary>
+                <label className="check-label">
+                  <span>Fit full slides</span>
+                  <input
+                    name="fit"
+                    type="checkbox"
+                    checked={fit}
+                    onChange={(event) => setFit(event.target.checked)}
+                  />
+                </label>
                 <div className="slider-setting">
                   <label className="range-label" htmlFor="slide-width">
                     Max slide width <output htmlFor="slide-width">{slideWidth} px</output>
@@ -495,6 +559,7 @@ export function App() {
                     min="240"
                     max="440"
                     step="20"
+                    disabled={fit}
                     value={slideWidth}
                     onChange={(event) => setSlideWidth(Number(event.target.value))}
                   />
@@ -547,7 +612,12 @@ export function App() {
                     onChange={(event) => setPauseOnHover(event.target.checked)}
                   />
                 </label>
-                <p>Slide widths adapt to small screens. Focus and reduced motion always pause autoplay.</p>
+                <p>
+                  {fit
+                    ? 'Full slides share the available space: one, two or three per view. Switch this off to set a fixed width.'
+                    : 'Fixed-width slides may reveal part of the next slide.'}{' '}
+                  Focus and reduced motion always pause autoplay.
+                </p>
               </details>
               <label className="check-label">
                 <span>Loop at the end</span>

@@ -12,6 +12,8 @@ React 18.3.1 and current React 19; current evergreen browsers; zero runtime depe
 
 ## Local verification
 
+The subsequent demo sizing revision keeps the library artifact unchanged and makes complete, equal-width slides the default. Its 16 existing demo/browser checks passed; additional browser measurements confirmed both edges align at 40 first/last positions in Chromium, Firefox and WebKit across 375–2560px. Opened desktop/tablet/phone screenshots confirm the new layout.
+
 - `npm run check`: formatting, strict TypeScript, 30 unit tests, library build, production demo build, gzip budget.
 - `npm run test:compat`: full unit suite with React 18.3.1 and 19.3.1 in isolated installs; public declarations compile against both type generations.
 - `npm run test:package`: exact npm tarball file allowlist, no runtime dependencies, ESM/CJS client directives and imports, real Node server rendering without browser globals.
@@ -43,7 +45,7 @@ Browser tests use Playwright's current Chromium, Firefox and WebKit builds, not 
 
 ## Review preview
 
-A draft deploy is available at https://6af1957fb31b0e78404e0232--rerousel.netlify.app/ (Netlify deploy ID `6af1957fb31b0e78404e0232`). It is a deploy-preview with no production publication timestamp and a noindex header. The live production deploy remains `6084a12febd42f25d9817528`. The preview includes a release-pending banner so its install instructions do not imply that npm already serves 1.0.0.
+A draft deploy is available at https://6af19ec64dcfc80d0a69faa9--rerousel.netlify.app/ (Netlify deploy ID `6af19ec64dcfc80d0a69faa9`). It is a deploy-preview with no production publication timestamp and a noindex header. The live production deploy remains `6084a12febd42f25d9817528`. The preview includes a release-pending banner so its install instructions do not imply that npm already serves 1.0.0.
 
 ## Upstream CI access dependency
 

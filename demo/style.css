@@ -261,6 +261,7 @@ h1 {
   text-align: right;
 }
 .demo-carousel {
+  container: demo-carousel / inline-size;
   gap: 16px;
   border-radius: 2px;
   align-items: stretch !important;
@@ -278,6 +279,23 @@ h1 {
   flex-direction: column;
   justify-content: space-between;
   container-type: inline-size;
+}
+.demo-carousel[data-fit='true'] > .slide {
+  width: 100%;
+}
+@container demo-carousel (min-width: 600px) {
+  .demo-carousel[data-fit='true'] > .slide {
+    width: calc((100% - var(--slide-gap)) / 2);
+  }
+}
+@container demo-carousel (min-width: 960px) {
+  .demo-carousel[data-fit='true'] > .slide {
+    width: calc((100% - 2 * var(--slide-gap)) / 3);
+  }
+}
+input:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 .slide-kicker,
 .poster-foot {

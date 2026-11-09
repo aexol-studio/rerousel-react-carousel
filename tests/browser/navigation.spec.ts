@@ -240,6 +240,7 @@ test('playground layout options update navigation, code and shareable settings w
   await page.getByRole('button', { name: 'Add one' }).click();
   await page.getByLabel('Leave yourself a note').fill('Keep this while changing layout');
   await page.getByText('Layout & behavior', { exact: true }).click();
+  await page.getByLabel('Fit full slides', { exact: true }).uncheck();
   await page.locator('#slide-width').fill('280');
   await page.locator('#slide-gap').fill('24');
   await page.getByLabel('Direction', { exact: true }).selectOption('rtl');

@@ -7,7 +7,7 @@
 
 Native scrolling. Interactive slides. Zero runtime dependencies. React 18 and 19.
 
-[v1 preview](https://6af1957fb31b0e78404e0232--rerousel.netlify.app/) · [Current website](https://rerousel.netlify.app/) · [Quick start](#quick-start) · [API](#api) · [Migration](#migrating-from-0x) · [Issues](https://github.com/aexol-studio/rerousel-react-carousel/issues)
+[v1 preview](https://6af19ec64dcfc80d0a69faa9--rerousel.netlify.app/) · [Current website](https://rerousel.netlify.app/) · [Quick start](#quick-start) · [API](#api) · [Migration](#migrating-from-0x) · [Issues](https://github.com/aexol-studio/rerousel-react-carousel/issues)
 
 > **These docs describe the upcoming breaking v1 release.** Publication is pending; `npm install rerousel` currently installs the previous release. Use the repository checkout to try v1 before it is published. Existing users: read [Migrating from 0.x](#migrating-from-0x).
 
@@ -62,25 +62,43 @@ This example starts with autoplay paused. Add the controls below when enabling i
 
 ### Sizing that works in real layouts
 
-Give each slide a width. Pixels, percentages, `clamp()`, media queries and unequal widths all work; Rerousel measures the rendered positions, so no item ref is needed.
+Give each slide a width. For an evenly filled viewport, divide the available width between the visible slides after subtracting the gaps. This example shows one, two or three complete slides according to the container width, including at the end of the track:
 
 ```css
 .gallery-column {
   min-width: 0; /* Allow this flex/grid child to shrink below its content width. */
+  max-width: 60rem;
+  container: gallery-layout / inline-size;
 }
 
 .gallery {
+  --visible-slides: 1;
+  --gap: 1rem;
   width: 100%;
-  max-width: 60rem;
-  gap: 1rem;
+  gap: var(--gap);
 }
 
 .gallery-slide {
-  width: min(20rem, 85%);
+  box-sizing: border-box;
+  width: calc((100% - (var(--visible-slides) - 1) * var(--gap)) / var(--visible-slides));
+}
+
+@container gallery-layout (min-width: 600px) {
+  .gallery {
+    --visible-slides: 2;
+  }
+}
+
+@container gallery-layout (min-width: 960px) {
+  .gallery {
+    --visible-slides: 3;
+  }
 }
 ```
 
-Use `<Rerousel className="gallery">` and a `gallery-slide` class on each direct slide. In a grid layout, use `minmax(0, 1fr)` for the column holding the carousel. Keep horizontal container padding symmetric. Do not override the essential `display: flex`, `position: relative` or child `flex-shrink: 0` layout rules.
+Wrap `<Rerousel className="gallery">` in a `gallery-column` element and give each direct slide the `gallery-slide` class. Supply at least as many slides as the largest visible count; add more to enable scrolling. The demo uses this layout by default. Turn off **Fit full slides** in its layout controls to try fixed widths with a partial next slide.
+
+Pixels, percentages, `clamp()` and unequal widths also work; Rerousel measures rendered positions, so no item ref is needed. In a grid layout, use `minmax(0, 1fr)` for the column holding the carousel. Keep horizontal container padding symmetric. Do not override the essential `display: flex`, `position: relative` or child `flex-shrink: 0` layout rules.
 
 Each direct DOM child is one slide. A component can be a slide if it renders one wrapper element; fragments also work when each item is an element. Wrap bare text. Rerousel does not add wrappers around your children.
 
