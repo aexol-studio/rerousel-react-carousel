@@ -34,7 +34,7 @@ export interface RerouselHandle {
 }
 
 const css =
-  '.rerousel{scroll-snap-type:x mandatory}.rerousel:focus-within{scroll-snap-type:none}.rerousel>*{flex-shrink:0;box-sizing:border-box;scroll-snap-align:start}.rerousel::-webkit-scrollbar{display:none}';
+  '.rerousel{scroll-snap-type:x mandatory}.rerousel:focus-within{scroll-snap-type:none}.rerousel>*{flex-shrink:0;box-sizing:border-box;scroll-snap-align:start}.rerousel::-webkit-scrollbar{display:none}.rerousel:has(>[data-rerousel-head])>*{order:1!important}.rerousel>[data-rerousel-head],.rerousel>[data-rerousel-head]~*{order:0!important}.rerousel[data-rerousel-moving]{scroll-snap-type:none!important}';
 
 /** An unstyled, native-scroll carousel. One live copy of each child; no cloning. */
 export const Rerousel = forwardRef<RerouselHandle, RerouselProps>(function Rerousel(
@@ -77,7 +77,7 @@ export const Rerousel = forwardRef<RerouselHandle, RerouselProps>(function Rerou
     const el = viewport.current;
     if (!el) return;
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const original = new Map<HTMLElement, string>();
+    let arranged = false;
     let slides: HTMLElement[] = [];
     let declared: HTMLElement[] = [];
     let measured = '';
@@ -90,50 +90,56 @@ export const Rerousel = forwardRef<RerouselHandle, RerouselProps>(function Rerou
     let pressed = false;
     let scrolling = false;
     let active = true;
+    // Reuse geometry within each operation, refreshing after a layout change.
+    let sign = 1,
+      inset = 0,
+      max = 0,
+      position = 0,
+      step = 0,
+      gap = 0,
+      infinite = false;
+    const offset = (slide: HTMLElement) =>
+      (sign > 0 ? slide.offsetLeft : el.clientWidth - slide.offsetLeft - slide.offsetWidth) - inset;
+    const slideStride = (slide: HTMLElement) => {
+      const css = getComputedStyle(slide);
+      return (
+        slide.offsetWidth +
+        gap +
+        (parseFloat(css.marginInlineStart) || 0) +
+        (parseFloat(css.marginInlineEnd) || 0)
+      );
+    };
     const geometry = () => {
       const computed = getComputedStyle(el);
-      const sign = computed.direction === 'rtl' ? -1 : 1;
+      sign = computed.direction === 'rtl' ? -1 : 1;
       const padding = computed.scrollPaddingInlineStart;
-      const inset = (parseFloat(padding) || 0) * (padding.endsWith('%') ? el.clientWidth / 100 : 1);
-      const offset = (slide: HTMLElement) =>
-        (sign > 0 ? slide.offsetLeft : el.clientWidth - slide.offsetLeft - slide.offsetWidth) - inset;
-      const max = el.scrollWidth - el.clientWidth;
-      const position = sign * el.scrollLeft;
+      inset = (parseFloat(padding) || 0) * (padding.endsWith('%') ? el.clientWidth / 100 : 1);
+      max = el.scrollWidth - el.clientWidth;
+      position = sign * el.scrollLeft;
       const fixed = options.current.itemWidth;
-      const step = fixed && Number.isFinite(fixed) && fixed > 0 ? fixed : 0;
-      const gap = parseFloat(computed.columnGap) || 0;
-      const stride = (slide: HTMLElement) => {
-        const css = getComputedStyle(slide);
-        return (
-          slide.offsetWidth +
-          gap +
-          (parseFloat(css.marginInlineStart) || 0) +
-          (parseFloat(css.marginInlineEnd) || 0)
-        );
-      };
-      // A single live slide cannot occupy both edges at once. Without a spare
-      // slide, retain finite scrolling instead of cloning or visibly rewinding.
-      const infinite =
-        options.current.loop && max > 1 && slides.length > 1 && max + 1 >= Math.max(...slides.map(stride));
-      return { sign, offset, max, position, step, infinite, inset, stride };
+      step = fixed && Number.isFinite(fixed) && fixed > 0 ? fixed : 0;
+      gap = parseFloat(computed.columnGap) || 0;
+      // One live slide cannot occupy both edges. Keep short collections finite.
+      infinite =
+        options.current.loop &&
+        max > 1 &&
+        slides.length > 1 &&
+        max + 1 >= Math.max(...slides.map(slideStride));
     };
     const arrange = (next: HTMLElement[], anchor?: HTMLElement, restore = false) => {
       const before = anchor?.getBoundingClientRect().left ?? 0;
-      const snap = el.style.scrollSnapType;
-      el.style.scrollSnapType = 'none';
+      // CSS groups siblings around one marker; never rewrite each slide's style.
+      el.setAttribute('data-rerousel-moving', '');
+      slides[0]?.removeAttribute('data-rerousel-head');
       slides = next;
-      slides.forEach((slide, i) => {
-        if (!original.has(slide)) original.set(slide, slide.style.order);
-        const order = restore ? original.get(slide)! : String(i);
-        if (slide.style.order !== order) slide.style.order = order;
-      });
-      if (restore) original.clear();
+      if (!restore) slides[0]?.setAttribute('data-rerousel-head', '');
+      arranged = !restore;
       const left = anchor ? el.scrollLeft + anchor.getBoundingClientRect().left - before : el.scrollLeft;
-      el.style.scrollSnapType = snap;
+      el.removeAttribute('data-rerousel-moving');
       if (anchor) el.scrollTo({ left, behavior: 'instant' });
     };
     const rotate = (direction: number) => {
-      const { sign, position, offset, inset } = geometry();
+      geometry();
       const first = slides[0];
       const last = slides[slides.length - 1];
       const candidate = direction > 0 ? first : last;
@@ -145,13 +151,14 @@ export const Rerousel = forwardRef<RerouselHandle, RerouselProps>(function Rerou
       const next = [...slides];
       if (direction > 0) next.push(next.shift()!);
       else next.unshift(next.pop()!);
+      const before = el.scrollLeft;
       arrange(next, direction > 0 ? last : first);
-      return Math.abs(sign * el.scrollLeft - position) > 1;
+      return Math.abs(el.scrollLeft - before) > 1;
     };
     const normalize = () => {
-      const { infinite, position, max, offset, stride: slideStride } = geometry();
+      geometry();
       if (!infinite) {
-        if (original.size)
+        if (arranged)
           arrange(
             declared,
             slides.find((slide) => offset(slide) + slide.offsetWidth > position),
@@ -196,48 +203,48 @@ export const Rerousel = forwardRef<RerouselHandle, RerouselProps>(function Rerou
         return;
       }
       measured = measure();
-      let g = geometry();
-      if (g.max <= 1) return;
+      geometry();
+      if (max <= 1) return;
       if (edge) {
         queued = 0;
         const natural = Array.from(el.children) as HTMLElement[];
-        if (g.infinite && direction < 0) natural.unshift(natural.pop()!);
+        if (infinite && direction < 0) natural.unshift(natural.pop()!);
         arrange(natural);
-        g = geometry();
-      } else if (g.infinite) {
-        // Prepare space before a command, including Previous at the initial slide.
+        geometry();
+      } else if (infinite) {
         normalize();
-        g = geometry();
-        const offsets = slides.map(g.offset);
-        const target = g.step
-          ? g.position + direction * g.step
-          : direction > 0
-            ? offsets.find((value) => value > g.position + 1)
-            : offsets.reverse().find((value) => value < g.position - 1);
-        if (target === undefined || target < -1 || target > g.max + 1) {
-          if (!rotate(direction)) return;
-          g = geometry();
-        }
+        geometry();
       }
-      const clamp = (value: number) => Math.max(0, Math.min(g.max, value));
-      const offsets = slides.map(g.offset).map(clamp);
-      const start = g.step ? 0 : offsets[0];
-      const target = edge
-        ? g.infinite || direction > 0
-          ? start
-          : g.max
-        : g.step
-          ? clamp(g.position + direction * g.step)
-          : direction > 0
-            ? (offsets.find((value) => value > g.position + 1) ?? g.max)
-            : (offsets.reverse().find((value) => value < g.position - 1) ?? start);
+      let target = 0;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const offsets = slides.map(offset);
+        const start = step ? 0 : offsets[0];
+        target = edge
+          ? infinite || direction > 0
+            ? start
+            : max
+          : step
+            ? position + direction * step
+            : direction > 0
+              ? (offsets.find((value) => value > position + 1) ?? Infinity)
+              : (offsets.reverse().find((value) => value < position - 1) ?? -Infinity);
+        if (attempt || !infinite || edge || (target >= -1 && target <= max + 1)) {
+          target = Math.max(0, Math.min(max, target === -Infinity ? start : target));
+          break;
+        }
+        if (!rotate(direction)) return;
+        geometry();
+      }
       const instant = edge || motion.matches || options.current.behavior === 'instant';
-      destination = instant || Math.abs(target - g.position) < 1 ? undefined : target;
-      el.scrollTo({ left: g.sign * target, behavior: instant ? 'instant' : 'smooth' });
+      destination = instant || Math.abs(target - position) < 1 ? undefined : target;
+      el.scrollTo({ left: sign * target, behavior: instant ? 'instant' : 'smooth' });
     };
     command.current = move;
     const settled = () => {
-      if (destination !== undefined && Math.abs(geometry().position - destination) > 1) return;
+      if (destination !== undefined) {
+        geometry();
+        if (Math.abs(position - destination) > 1) return;
+      }
       scrolling = false;
       destination = undefined;
       if (!pressed) normalize();
@@ -283,8 +290,8 @@ export const Rerousel = forwardRef<RerouselHandle, RerouselProps>(function Rerou
         current.some((slide, i) => slide !== declared[i]) ||
         !options.current.loop
       ) {
-        for (const [slide, order] of original) slide.style.order = order;
-        original.clear();
+        slides[0]?.removeAttribute('data-rerousel-head');
+        arranged = false;
         declared = current;
         slides = current;
       }
@@ -306,65 +313,41 @@ export const Rerousel = forwardRef<RerouselHandle, RerouselProps>(function Rerou
       sync();
     };
     const observer = new ResizeObserver(resize);
-    const externalStyle = (value: string | null) =>
-      (value || '')
-        .split(';')
-        .map((part) => part.trim())
-        .filter((part) => part && !/^(order|scroll-snap-type):/.test(part))
-        .join(';');
     const mutations = new MutationObserver((records) => {
-      if (
-        records.some(
-          ({ target, attributeName, oldValue }) =>
-            (target === el || target.parentNode === el) &&
-            (attributeName !== 'style' ||
-              externalStyle(oldValue) !== externalStyle((target as HTMLElement).getAttribute('style'))),
-        )
-      )
-        observe();
+      if (records.some(({ target }) => target === el || target.parentNode === el)) observe();
     });
     mutations.observe(el, {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeOldValue: true,
       attributeFilter: ['class', 'style', 'dir'],
     });
     refresh.current = observe;
-    el.addEventListener('pointerenter', enter);
-    el.addEventListener('pointerleave', leave);
-    el.addEventListener('focusin', cancel);
-    el.addEventListener('focusout', blur);
-    document.addEventListener('visibilitychange', sync);
-    window.addEventListener('resize', resize);
-    motion.addEventListener('change', sync);
-    el.addEventListener('scrollend', settled);
-    el.addEventListener('scroll', scroll, { passive: true });
-    el.addEventListener('pointerdown', press);
-    window.addEventListener('pointerup', release);
-    window.addEventListener('pointercancel', release);
-    el.addEventListener('wheel', cancel, { passive: true });
+    const events: [EventTarget, string, EventListener][] = [
+      [el, 'pointerenter', enter],
+      [el, 'pointerleave', leave],
+      [el, 'focusin', cancel],
+      [el, 'focusout', blur],
+      [document, 'visibilitychange', sync],
+      [window, 'resize', resize],
+      [motion, 'change', sync],
+      [el, 'scrollend', settled],
+      [el, 'scroll', scroll],
+      [el, 'pointerdown', press],
+      [window, 'pointerup', release],
+      [window, 'pointercancel', release],
+      [el, 'wheel', cancel],
+    ];
+    for (const [target, name, listener] of events) target.addEventListener(name, listener, { passive: true });
     observe();
     return () => {
       active = false;
       clearInterval(timer);
       observer.disconnect();
       mutations.disconnect();
-      el.removeEventListener('pointerenter', enter);
-      el.removeEventListener('pointerleave', leave);
-      el.removeEventListener('focusin', cancel);
-      el.removeEventListener('focusout', blur);
-      el.removeEventListener('scrollend', settled);
-      el.removeEventListener('scroll', scroll);
-      el.removeEventListener('pointerdown', press);
-      window.removeEventListener('pointerup', release);
-      window.removeEventListener('pointercancel', release);
-      el.removeEventListener('wheel', cancel);
-      document.removeEventListener('visibilitychange', sync);
-      window.removeEventListener('resize', resize);
-      motion.removeEventListener('change', sync);
-      const { offset, position } = geometry();
-      if (original.size)
+      for (const [target, name, listener] of events) target.removeEventListener(name, listener);
+      geometry();
+      if (arranged)
         arrange(
           declared,
           slides.find((slide) => offset(slide) + slide.offsetWidth > position),

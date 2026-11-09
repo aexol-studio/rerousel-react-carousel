@@ -5,9 +5,9 @@
 
 **A tiny, unstyled React carousel. Your content, your styles.**
 
-Native scrolling. Interactive slides. Zero runtime dependencies. React 18 and 19.
+Native scrolling. One live copy of each slide. Zero runtime dependencies. React 18 and 19.
 
-[v1 preview](https://6af1ab40ec862150ebbeeab7--rerousel.netlify.app/) · [Current website](https://rerousel.netlify.app/) · [Quick start](#quick-start) · [API](#api) · [Migration](#migrating-from-0x) · [Issues](https://github.com/aexol-studio/rerousel-react-carousel/issues)
+[v1 preview](https://6af1b0d905ff6b7f8a909e2c--rerousel.netlify.app/) · [Current website](https://rerousel.netlify.app/) · [Quick start](#quick-start) · [API](#api) · [Migration](#migrating-from-0x) · [Issues](https://github.com/aexol-studio/rerousel-react-carousel/issues)
 
 > **These docs describe the upcoming breaking v1 release.** Publication is pending; `npm install rerousel` currently installs the previous release. Use the repository checkout to try v1 before it is published. Existing users: read [Migrating from 0.x](#migrating-from-0x).
 
@@ -22,7 +22,7 @@ Native scrolling. Interactive slides. Zero runtime dependencies. React 18 and 19
 
 Rerousel handles movement and essential layout. You supply slide content, styles and visible controls. It does not virtualize large collections or render a themed navigation UI.
 
-The core is approximately **2.87 kB gzipped**, with an enforced build budget. The measurement is the minified ESM entry compressed with gzip level 9, excluding React, the demo and the npm archive. Run `npm run size` for the current byte count; see [the size check](https://github.com/aexol-studio/rerousel-react-carousel/blob/master/scripts/size.mjs).
+The core is approximately **2.64 kB gzipped**, with an enforced build budget. The measurement is the minified ESM entry compressed with gzip level 9, excluding React, the demo and the npm archive. Run `npm run size` for the current byte count; see [the size check](https://github.com/aexol-studio/rerousel-react-carousel/blob/master/scripts/size.mjs).
 
 ## Installation and support
 
@@ -34,7 +34,7 @@ npm install rerousel
 
 Requires **React 18.3.1 or React 19**. The compatibility suite runs against **18.3.1 and 19.3.1**, including their TypeScript declarations. Current Chrome, Edge, Firefox and Safari are the support target, including mobile browsers.
 
-The component uses ResizeObserver, native smooth scrolling, scrollend events and CSS scroll snap. It ships no browser polyfills. See [Development](#development) to run the unpublished v1 locally.
+The component uses ResizeObserver, native smooth scrolling, scrollend events, CSS scroll snap and `:has()`. It ships no browser polyfills. See [Development](#development) to run the unpublished v1 locally.
 
 ## Quick start
 
@@ -173,7 +173,7 @@ State and input values survive navigation because each slide remains mounted onc
 
 ### Looping and motion
 
-With `loop={true}`, the first slide follows the last in the same direction, and Previous works in reverse. Rerousel changes the CSS `order` of fully offscreen slides and compensates the native scroll position in the same update. Visible content stays in place during that adjustment; the next advance uses native scrolling. Each slide keeps its original DOM node and React instance.
+With `loop={true}`, the first slide follows the last in the same direction, and Previous works in reverse. A single internal marker sets the start of the cyclic slide order. CSS lays out the two groups around that marker. When a slide is fully offscreen, Rerousel moves the marker and compensates the scroll position in the same update. The browser handles scrolling and snapping, with no JavaScript animation loop. Each slide keeps its original DOM node and React instance.
 
 Seamless looping needs spare content: `scrollWidth - clientWidth` must be at least the widest outer slide (including inline margins) plus the gap. Without that space, a single live slide cannot appear at both edges. Rerousel then uses finite scrolling and stays at the boundary. For native gestures in both directions, provide at least two extra slides beyond the largest visible count. If all slides fit, navigation and autoplay remain idle.
 
@@ -181,7 +181,7 @@ Seamless looping needs spare content: `scrollWidth - clientWidth` must be at lea
 
 Set `loop={false}` for finite navigation. Advancing past the first or last available position leaves it in place.
 
-CSS ordering changes visual positions only. Screen readers and Tab navigation keep the original DOM order. A focused slide is not recycled; focus inside the carousel pauses autoplay. Leave slide CSS `order` under the component's control.
+CSS ordering changes visual positions only. Screen readers and Tab navigation keep the original DOM order. A focused slide is not recycled; focus inside the carousel pauses autoplay. Leave slide CSS `order` and `data-rerousel-*` attributes under the component's control.
 
 ## API
 
@@ -201,7 +201,7 @@ CSS ordering changes visual positions only. Screen readers and Tab navigation ke
 
 An explicit `itemWidth` disables CSS snapping so the requested pixel distance is respected. Automatic sizing retains slide snapping.
 
-Standard `div` attributes pass through, including `className`, `style`, `dir="rtl"`, `aria-label` and event handlers. `itemRef` keeps its legacy React-ref meaning rather than HTML's microdata `itemref` attribute.
+Standard `div` attributes pass through, including `className`, `style`, `dir="rtl"`, `aria-label` and event handlers. The `data-rerousel-*` prefix is reserved for internal layout bookkeeping. `itemRef` keeps its legacy React-ref meaning rather than HTML's microdata `itemref` attribute.
 
 ### Ref methods
 

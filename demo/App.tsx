@@ -668,7 +668,7 @@ ${layoutStyles}      <Rerousel
             <h2 id="footprint-title">
               A small footprint.
               <br />
-              Room for your ideas.
+              One live copy.
             </h2>
             <div className="footprint-proof">
               <div className="size-number">
@@ -680,6 +680,7 @@ ${layoutStyles}      <Rerousel
                 <br />
                 Zero runtime dependencies. No CSS import.
               </p>
+              <p>Each slide stays mounted once. Your browser does the scrolling.</p>
               <a href={`${github}/blob/master/scripts/size.mjs`}>
                 See how it’s measured <span aria-hidden="true">↗</span>
               </a>
@@ -780,9 +781,10 @@ ${layoutStyles}      <Rerousel
                 <details>
                   <summary>How does the loop work?</summary>
                   <p>
-                    Each slide renders once. Offscreen slides move around the track, so the last flows
-                    straight into the first. Forms and React state stay intact. Leave spare slides outside the
-                    viewport; if there is too little content, scrolling stops at the ends.
+                    One marker tells CSS where the track starts. Moving that marker recycles offscreen slides,
+                    so the last flows straight into the first. Every slide keeps its original DOM node and
+                    React state; the browser handles scrolling. Leave spare slides outside the viewport; if
+                    there is too little content, scrolling stops at the ends.
                   </p>
                 </details>
                 <details>
