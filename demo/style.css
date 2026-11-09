@@ -34,6 +34,21 @@ a {
   color: inherit;
   text-underline-offset: 4px;
 }
+.ui-icon {
+  display: block;
+  flex-shrink: 0;
+}
+.arrow {
+  width: 1.25em;
+  height: 1.25em;
+}
+.icon-link,
+.header nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375em;
+  line-height: 1.5;
+}
 button,
 input,
 select {
@@ -138,6 +153,11 @@ main[id] {
   display: flex;
   align-items: center;
   gap: 5px;
+  flex-shrink: 0;
+}
+.wordmark img {
+  display: block;
+  height: auto;
 }
 .wordmark span {
   display: inline-block;
@@ -146,7 +166,11 @@ main[id] {
 }
 .header nav {
   display: flex;
+  align-items: center;
   gap: 40px;
+}
+.header nav a {
+  border-bottom: 1px solid transparent;
 }
 .header a:not(.wordmark) {
   font-size: 16px;
@@ -533,7 +557,7 @@ input[type='checkbox'] {
   line-height: 1.45;
 }
 .text-link {
-  display: inline-block;
+  display: inline-flex;
   margin-top: 16px;
   padding-block: 8px;
   font-size: 16px;
@@ -776,6 +800,7 @@ pre code {
 }
 .install-details {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
@@ -1113,6 +1138,9 @@ td:last-child {
   .wordmark {
     font-size: 27px;
   }
+  .wordmark img {
+    width: clamp(128px, 40vw, 169px);
+  }
   .wordmark span {
     font-size: 30px;
   }
@@ -1320,6 +1348,15 @@ td:last-child {
     margin-top: 32px;
     padding-bottom: 20px;
     font-size: 19vw;
+  }
+}
+@media (max-width: 360px) {
+  h1 {
+    font-size: 19vw;
+  }
+  .hero-note {
+    display: block;
+    margin: 12px 0 0;
   }
 }
 @media (prefers-reduced-motion: reduce) {

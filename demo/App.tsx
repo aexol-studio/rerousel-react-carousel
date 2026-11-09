@@ -26,17 +26,16 @@ const defaults = {
   behavior: initial.get('behavior') === 'instant' ? ('instant' as const) : ('smooth' as const),
 };
 
-function Arrow({ back = false }: { back?: boolean }) {
+function Arrow({ direction = 'right' }: { direction?: 'right' | 'left' | 'up-right' | 'down' }) {
+  const rotation = { right: 0, left: 180, 'up-right': -45, down: 90 }[direction];
   return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-      style={back ? { transform: 'rotate(180deg)' } : undefined}
-    >
-      <path d="M4 12h15M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.7" />
+    <svg className="ui-icon arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M4 12h15M13 5l7 7-7 7"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        transform={rotation ? `rotate(${rotation} 12 12)` : undefined}
+      />
     </svg>
   );
 }
@@ -59,7 +58,7 @@ function CopyButton({ value, label = 'Copy code' }: { value: string; label?: str
     <span className="copy-control">
       <button className="button copy-button" onClick={copy}>
         {status === 'Copied' ? 'Copied' : label}
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <svg className="ui-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M9 9h11v12H9zM15 9V3H3v12h6" stroke="currentColor" strokeWidth="1.6" />
         </svg>
       </button>
@@ -317,11 +316,11 @@ ${layoutStyles}      <Rerousel
             <a href="#playground">Playground</a>
             <a href="#start">Docs</a>
             <a href={github}>
-              GitHub <span aria-hidden="true">↗</span>
+              GitHub <Arrow direction="up-right" />
             </a>
           </nav>
-          <a className="header-npm" href={npm}>
-            View on npm <span aria-hidden="true">↗</span>
+          <a className="header-npm icon-link" href={npm}>
+            View on npm <Arrow direction="up-right" />
           </a>
         </header>
         <main id="main">
@@ -486,7 +485,7 @@ ${layoutStyles}      <Rerousel
                     disabled={!position.overflow || (!loop && position.start)}
                     onClick={() => carousel.current?.previous()}
                   >
-                    <Arrow back={direction !== 'rtl'} />
+                    <Arrow direction={direction === 'rtl' ? 'right' : 'left'} />
                   </button>
                   <button
                     className="icon-button"
@@ -494,7 +493,7 @@ ${layoutStyles}      <Rerousel
                     disabled={!position.overflow || (!loop && position.end)}
                     onClick={() => carousel.current?.next()}
                   >
-                    <Arrow back={direction === 'rtl'} />
+                    <Arrow direction={direction === 'rtl' ? 'left' : 'right'} />
                   </button>
                 </div>
               </div>
@@ -643,7 +642,20 @@ ${layoutStyles}      <Rerousel
                 onClick={() => setStop(!stop)}
               >
                 {reduced ? 'Motion reduced' : stop ? 'Resume autoplay' : 'Pause autoplay'}
-                <span aria-hidden="true">{stop ? '▷' : 'Ⅱ'}</span>
+                <svg
+                  className="ui-icon"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d={stop ? 'm8 5 11 7-11 7Z' : 'M8 5v14M16 5v14'}
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                  />
+                </svg>
               </button>
               <p className="control-note">
                 {reduced
@@ -653,8 +665,8 @@ ${layoutStyles}      <Rerousel
                     : 'Your settings update the code and this page’s shareable URL.'}
               </p>
               <div className="settings-actions">
-                <a className="text-link" href="#example">
-                  Get the code <span aria-hidden="true">↓</span>
+                <a className="text-link icon-link" href="#example">
+                  Get the code <Arrow direction="down" />
                 </a>
                 <button className="reset-button" onClick={reset}>
                   Reset settings
@@ -683,8 +695,8 @@ ${layoutStyles}      <Rerousel
                 Zero runtime dependencies. No CSS import.
               </p>
               <p>Each slide stays mounted once. Your browser does the scrolling.</p>
-              <a href={`${sourceFiles}/scripts/size.mjs`}>
-                See how it’s measured <span aria-hidden="true">↗</span>
+              <a className="icon-link" href={`${sourceFiles}/scripts/size.mjs`}>
+                See how it’s measured <Arrow direction="up-right" />
               </a>
             </div>
           </section>
@@ -716,8 +728,8 @@ ${layoutStyles}      <Rerousel
                 </pre>
                 <div className="install-details">
                   <span>npm · pnpm · yarn · bun</span>
-                  <a href={npm}>
-                    Package on npm <span aria-hidden="true">↗</span>
+                  <a className="icon-link" href={npm}>
+                    Package on npm <Arrow direction="up-right" />
                   </a>
                 </div>
               </div>

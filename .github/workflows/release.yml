@@ -37,4 +37,7 @@ jobs:
             if (pkg.version !== process.env.EXPECTED_VERSION) throw Error("Version does not match package.json");
             if (process.env.GITHUB_REF !== "refs/heads/master") throw Error("Publish only from master");
           '
-      - run: npm publish --provenance --access public
+      - name: Publish to npm
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
