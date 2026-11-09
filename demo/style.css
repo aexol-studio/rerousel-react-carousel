@@ -35,7 +35,8 @@ a {
   text-underline-offset: 4px;
 }
 button,
-input {
+input,
+select {
   font: inherit;
 }
 button,
@@ -238,6 +239,7 @@ h1 {
   min-width: 0;
   padding: 24px;
   border-radius: var(--radius);
+  align-self: start;
 }
 .stage-top,
 .stage-bottom {
@@ -268,13 +270,14 @@ h1 {
   outline-offset: 7px;
 }
 .slide {
-  flex-basis: 264px;
-  width: 264px;
-  min-height: 300px;
+  flex-basis: auto;
+  width: min(var(--slide-width, 320px), calc(100% - 32px));
+  min-height: 360px;
   padding: 24px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  container-type: inline-size;
 }
 .slide-kicker,
 .poster-foot {
@@ -288,6 +291,9 @@ h1 {
   font-weight: 700;
   line-height: 0.83;
   letter-spacing: -0.025em;
+}
+.poster strong {
+  font-size: clamp(56px, 29cqw, 76px);
 }
 .poster-make {
   --slide-bg: #f0ff6a;
@@ -305,6 +311,14 @@ h1 {
   --slide-bg: #a4d3c5;
   --slide-ink: #213c32;
 }
+.poster-next {
+  --slide-bg: #ffd9dc;
+  --slide-ink: #6d2430;
+}
+.poster-back {
+  --slide-bg: #b8d9f0;
+  --slide-ink: #243e51;
+}
 .poster {
   background: var(--slide-bg);
   color: var(--slide-ink);
@@ -313,6 +327,18 @@ h1 {
   margin-top: 20px;
   color: var(--stage-muted);
   font-size: var(--small);
+}
+.navigation-hint {
+  display: grid;
+  gap: 6px;
+  line-height: 1.4;
+}
+.slide-position {
+  color: var(--white);
+  font-variant-numeric: tabular-nums;
+}
+.slide-position > span {
+  color: var(--stage-muted);
 }
 .carousel-buttons {
   display: flex;
@@ -329,13 +355,13 @@ h1 {
   display: grid;
   place-items: center;
 }
-.icon-button:hover {
+.icon-button:hover:not(:disabled) {
   background: var(--white);
   color: var(--ink);
   border-color: var(--white);
 }
 .playground-controls {
-  padding-block: 20px 8px;
+  padding-block: 8px;
 }
 .playground-controls h3 {
   font-size: 28px;
@@ -350,7 +376,7 @@ h1 {
 .mode-control {
   border: 0;
   padding: 0;
-  margin: 24px 0;
+  margin: 20px 0;
   min-width: 0;
 }
 .mode-control legend {
@@ -410,6 +436,46 @@ h1 {
 .range-label output {
   font-variant-numeric: tabular-nums;
 }
+.slider-setting {
+  min-width: 0;
+}
+.layout-settings {
+  margin-top: 12px;
+  border-block: 1px solid #d5828a;
+}
+.layout-settings summary {
+  min-height: 48px;
+  padding-block: 14px;
+  font-size: 16px;
+  cursor: pointer;
+}
+.layout-settings .slider-setting {
+  margin-top: 16px;
+}
+.layout-settings p {
+  color: var(--rose);
+  font-size: var(--small);
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+.select-setting {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--small);
+  margin-top: 12px;
+}
+.select-setting select {
+  min-width: 0;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px;
+  color: var(--red);
+  border: 1px solid var(--rose);
+  border-radius: var(--radius);
+  background: var(--white);
+}
 input[type='range'] {
   width: 100%;
   margin: 0;
@@ -454,6 +520,27 @@ input[type='checkbox'] {
   padding-block: 8px;
   font-size: 16px;
 }
+.settings-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+.settings-actions .text-link {
+  margin-top: 0;
+  padding-block: 14px;
+}
+.reset-button {
+  min-height: 44px;
+  padding: 8px 0 8px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--rose);
+  font-size: var(--small);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
 .hero-bottom {
   display: flex;
   justify-content: space-between;
@@ -482,7 +569,9 @@ input[type='checkbox'] {
 }
 .interactive-slide p,
 .input-slide p,
-.link-slide p {
+.link-slide p,
+.choice-slide p,
+.details-slide p {
   font-size: var(--small);
   line-height: 1.4;
   margin-top: 16px;
@@ -514,7 +603,7 @@ input[type='checkbox'] {
   color: #213c32;
 }
 .link-slide strong {
-  font-size: 58px;
+  font-size: clamp(36px, 21cqw, 58px);
 }
 .link-slide a {
   background: #213c32;
@@ -524,6 +613,39 @@ input[type='checkbox'] {
 }
 .link-slide a:hover {
   background: #345e4d;
+}
+.choice-slide {
+  color: #502f22;
+  background: #f4a976;
+}
+.choice-slide h3,
+.details-slide summary {
+  font-family: var(--display);
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.slide-choice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  margin-top: 16px;
+  font-size: 18px;
+  cursor: pointer;
+}
+.slide-choice input {
+  accent-color: #502f22;
+  margin: 0;
+}
+.details-slide {
+  color: #243e51;
+  background: #b8d9f0;
+}
+.details-slide summary {
+  padding-block: 8px;
+  cursor: pointer;
 }
 .footprint {
   display: grid;
@@ -855,7 +977,8 @@ td:last-child {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0 40px;
-    padding-top: 32px;
+    align-items: start;
+    padding-top: 28px;
   }
   .playground-controls h3 {
     grid-column: 1;
@@ -870,30 +993,31 @@ td:last-child {
     margin: 0;
     align-self: center;
   }
-  .range-label {
+  .playground-controls > .slider-setting {
     grid-column: 1;
     margin-top: 24px;
   }
-  #interval {
+  .layout-settings {
     grid-column: 1;
+    grid-row: 4 / 8;
+    margin-top: 16px;
   }
-  .check-label {
+  .playground-controls > .check-label {
     grid-column: 2;
-    grid-row: 3 / 5;
-    margin-block: 24px 0;
+    grid-row: 3;
+    margin-block: 24px 12px;
   }
   .playback {
-    grid-column: 1;
-    margin-top: 20px;
+    grid-column: 2;
+    grid-row: 4;
   }
   .playground-controls p.control-note {
     grid-column: 2;
     grid-row: 5;
-    align-self: center;
   }
-  .text-link {
-    grid-column: 1;
-    margin-top: 8px;
+  .settings-actions {
+    grid-column: 2;
+    grid-row: 6;
   }
   .hero-bottom {
     margin-top: 20px;
@@ -1030,13 +1154,8 @@ td:last-child {
     font-size: 13px;
   }
   .slide {
-    flex-basis: 252px;
-    width: 252px;
     min-height: 318px;
-    padding: 22px;
-  }
-  .poster strong {
-    font-size: 76px;
+    padding: 20px;
   }
   .stage-bottom {
     font-size: 13px;
@@ -1054,6 +1173,15 @@ td:last-child {
   .playground-controls {
     display: block;
     padding-top: 28px;
+  }
+  .playground-controls > .slider-setting {
+    margin-top: 0;
+  }
+  .playground-controls > .check-label {
+    margin-block: 8px 16px;
+  }
+  .layout-settings {
+    margin-top: 12px;
   }
   .playground-controls h3 {
     font-size: 26px;

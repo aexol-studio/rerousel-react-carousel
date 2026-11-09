@@ -36,6 +36,7 @@ export function dimensions(el: HTMLElement, widths = [200, 200, 200], viewportWi
   let offset = 0;
   Array.from(el.children).forEach((child, index) => {
     Object.defineProperty(child, 'offsetLeft', { configurable: true, value: offset });
+    Object.defineProperty(child, 'offsetWidth', { configurable: true, value: widths[index] ?? 0 });
     offset += widths[index] ?? 0;
   });
   act(() => resize());
@@ -64,6 +65,7 @@ beforeEach(() => {
   Object.defineProperty(document, 'hidden', { configurable: true, value: false });
   scrollTo = vi.fn(function (this: HTMLElement, options: ScrollToOptions) {
     this.scrollLeft = options.left ?? 0;
+    this.dispatchEvent(new Event('scrollend'));
   });
   vi.stubGlobal('scrollTo', scrollTo);
   Object.defineProperty(HTMLElement.prototype, 'scrollTo', { configurable: true, value: scrollTo });

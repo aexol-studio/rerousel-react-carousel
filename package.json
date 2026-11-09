@@ -1,7 +1,7 @@
 {
   "name": "rerousel",
   "version": "1.0.0",
-  "description": "A tiny, dependency-free infinite carousel for React. Your content, your styles.",
+  "description": "A tiny, dependency-free React carousel with native scrolling and interactive slides.",
   "type": "module",
   "main": "./lib/index.cjs",
   "module": "./lib/index.js",

@@ -11,7 +11,7 @@ const keys = (el: HTMLElement, key: string) =>
   });
 
 describe('native carousel', () => {
-  it('waits a complete interval, advances one actual slide, then wraps instantly without reversing', () => {
+  it('waits a complete interval, advances one actual slide, then smoothly returns to the start', () => {
     const el = render(<Rerousel>{slides}</Rerousel>);
     dimensions(el);
     tick(2999);
@@ -21,7 +21,7 @@ describe('native carousel', () => {
     tick();
     expect(el.scrollLeft).toBe(400);
     tick();
-    expect(scrollTo).toHaveBeenLastCalledWith({ left: 0, behavior: 'instant' });
+    expect(scrollTo).toHaveBeenLastCalledWith({ left: 0, behavior: 'smooth' });
   });
   it('measures unequal widths and gaps, including a partially visible final slide', () => {
     const el = render(<Rerousel>{slides}</Rerousel>);
@@ -62,6 +62,94 @@ describe('native carousel', () => {
     expect(el.scrollLeft).toBe(100);
     tick(12000);
     expect(el.scrollLeft).toBe(400);
+    expect(el.style.scrollSnapType).toBe('none');
+  });
+  it('counts commands issued during a native animation, including reversals and wraps', () => {
+    const ref = createRef<RerouselHandle>();
+    const el = render(
+      <Rerousel ref={ref} stop>
+        {slides}
+      </Rerousel>,
+    );
+    dimensions(el);
+    scrollTo.mockImplementation(() => undefined);
+    ref.current?.next();
+    ref.current?.next();
+    expect(scrollTo).toHaveBeenLastCalledWith({ left: 400, behavior: 'smooth' });
+    ref.current?.previous();
+    expect(scrollTo).toHaveBeenLastCalledWith({ left: 200, behavior: 'smooth' });
+    ref.current?.next();
+    ref.current?.next();
+    expect(scrollTo).toHaveBeenLastCalledWith({ left: 0, behavior: 'smooth' });
+  });
+  it('waits for a scroll to finish before starting a full autoplay interval', () => {
+    const el = render(<Rerousel interval={1000}>{slides}</Rerousel>);
+    dimensions(el);
+    scrollTo.mockImplementation(() => undefined);
+    tick(1000);
+    expect(scrollTo).toHaveBeenCalledTimes(1);
+    tick(2000);
+    expect(scrollTo).toHaveBeenCalledTimes(1);
+    el.scrollLeft = 200;
+    fire(el, 'scrollend');
+    tick(999);
+    expect(scrollTo).toHaveBeenCalledTimes(1);
+    tick(1);
+    expect(scrollTo).toHaveBeenLastCalledWith({ left: 400, behavior: 'smooth' });
+  });
+  it('lets native gestures take over from a pending destination and pauses while pressed', () => {
+    const ref = createRef<RerouselHandle>();
+    const el = render(
+      <Rerousel ref={ref} pauseOnHover={false}>
+        {slides}
+      </Rerousel>,
+    );
+    dimensions(el);
+    scrollTo.mockImplementation(() => undefined);
+    ref.current?.next();
+    ref.current?.next();
+    fire(el, 'pointerdown');
+    tick(6000);
+    expect(scrollTo).toHaveBeenCalledTimes(2);
+    el.scrollLeft = 200;
+    fire(window, 'pointerup');
+    tick();
+    expect(scrollTo).toHaveBeenLastCalledWith({ left: 400, behavior: 'smooth' });
+    fire(el, 'wheel');
+    el.scrollLeft = 0;
+    ref.current?.next();
+    expect(scrollTo).toHaveBeenLastCalledWith({ left: 200, behavior: 'smooth' });
+  });
+  it('waits for native swipe momentum after pointer cancellation and release', () => {
+    const el = render(<Rerousel pauseOnHover={false}>{slides}</Rerousel>);
+    dimensions(el);
+    fire(el, 'pointerdown');
+    fire(window, 'pointercancel');
+    fire(el, 'scroll');
+    fire(window, 'pointerup');
+    tick(6000);
+    expect(scrollTo).not.toHaveBeenCalled();
+    el.scrollLeft = 200;
+    fire(el, 'scrollend');
+    tick(2999);
+    expect(scrollTo).not.toHaveBeenCalled();
+    tick(1);
+    expect(scrollTo).toHaveBeenLastCalledWith({ left: 400, behavior: 'smooth' });
+  });
+  it('can explicitly use instant movement in both directions and at the boundary', () => {
+    const ref = createRef<RerouselHandle>();
+    const el = render(
+      <Rerousel ref={ref} behavior="instant" stop>
+        {slides}
+      </Rerousel>,
+    );
+    dimensions(el);
+    ref.current?.previous();
+    expect(scrollTo).toHaveBeenLastCalledWith({ left: 400, behavior: 'instant' });
+    ref.current?.next();
+    expect(scrollTo).toHaveBeenLastCalledWith({ left: 0, behavior: 'instant' });
+    ref.current?.next();
+    expect(scrollTo).toHaveBeenLastCalledWith({ left: 200, behavior: 'instant' });
   });
   it('does not create a timer when all content fits, or there are no slides', () => {
     const el = render(<Rerousel>{slides}</Rerousel>);
@@ -269,7 +357,7 @@ describe('native carousel', () => {
     );
     dimensions(el);
     [...el.children].forEach((child, index) =>
-      Object.defineProperty(child, 'offsetLeft', { configurable: true, value: 400 - index * 200 }),
+      Object.defineProperty(child, 'offsetLeft', { configurable: true, value: -index * 200 }),
     );
     tick();
     expect(el.scrollLeft).toBe(-200);
@@ -277,6 +365,19 @@ describe('native carousel', () => {
     expect(el.scrollLeft).toBe(-400);
     keys(el, 'ArrowRight');
     expect(el.scrollLeft).toBe(-200);
+  });
+  it('measures right edges for unequal-width RTL slides', () => {
+    const el = render(<Rerousel style={{ direction: 'rtl' }}>{slides}</Rerousel>);
+    dimensions(el, [180, 260, 200], 240);
+    [60, -200, -400].forEach((offset, index) =>
+      Object.defineProperty(el.children[index], 'offsetLeft', { configurable: true, value: offset }),
+    );
+    tick();
+    expect(el.scrollLeft).toBe(-180);
+    tick();
+    expect(el.scrollLeft).toBe(-400);
+    tick();
+    expect(Math.abs(el.scrollLeft)).toBe(0);
   });
   it('renders on the server with no browser globals and includes a CSP nonce', () => {
     const html = renderToString(

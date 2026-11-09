@@ -16,7 +16,7 @@ Copy deck: “Your content. On repeat.” → a tiny unstyled React carousel →
 
 Taste's “The sentence is the layout” is the starting direction. Barlow Condensed 700 for display, Barlow 400/500/600 for interface text, system monospace only for actual code. Self-host the OFL fonts, load with swap. Carmine #9c1220, dark ink #242323, white #ffffff, light surface #f5f4f2, pale rose #ffd9dc. CSS custom properties own semantic colors, five principal text sizes, 8px spacing rhythm, small 6px control radius, responsive 20–56px gutters, 1400px maximum content width.
 
-The hero is a large typographic sentence above a dark working product stage. The live sample slides use a consistent, original poster language; their colors are examples, not additional page accents. The playground controls sit alongside the stage on desktop and below on phones. Documentation follows in a light field with a carmine statement about the package footprint. Footer repeats the existing wordmark language.
+The hero is a large typographic sentence above a dark working product stage. The live sample slides use a consistent, original poster language; their colors are examples, not additional page accents. The playground controls sit alongside the stage on desktop and below on phones. Documentation follows in a light field with a carmine statement about the package footprint. The compact header logo uses a three-slide lowercase-r mark and outlined Barlow lettering; light/dark variants share identical proportions and require no font download. Footer repeats the wordmark language.
 
 ## Interaction and states
 
@@ -24,7 +24,17 @@ Buttons have explicit hover, active, focus-visible, and disabled states; minimum
 
 ## Library tradeoff
 
-Each React slide renders once. Autoplay uses smooth native scrolling between real slide positions, then an instant reset at the boundary. This prioritizes fully interactive content and the smallest reliable implementation; it is not a continuous marquee. No cloned React trees, duplicated IDs, inert copies, or remounted slide state. When all items fit, autoplay does no work. Fixed item widths are optional; actual offsets account for variable widths, borders, padding and gaps. The original itemRef is accepted but no longer required.
+Each React slide renders once. Autoplay uses native scrolling between real slide positions, then scrolls back to the start after the last position. The `behavior` setting chooses smooth (default) or instant movement, including this return. This prioritizes fully interactive content and a small reliable implementation; it is not a continuous marquee. No cloned React trees, duplicated IDs, inert copies, or remounted slide state. When all items fit, autoplay does no work. Fixed item widths are optional; actual offsets account for variable widths, borders, padding and gaps. The original itemRef is accepted but no longer required.
+
+## Wide-screen playground revision
+
+The original three 264px interactive slides could fit entirely inside the desktop viewport, while four posters barely overflowed. The demo incorrectly displayed “Autoplay on” in that state. Both problems made the carousel appear broken despite a rendered interface.
+
+The bounded 1512px page now presents six posters or five distinct interactive examples: counter, text input, link, checkbox, and native disclosure. Slides default to a maximum 320px width and adapt to leave a visible next-slide affordance on phones. Both examples have meaningful overflow even at a 2560px browser width. The stage retains its natural height when advanced settings expand.
+
+Keep common controls immediately visible: content, advance interval, looping, and pause/resume. Put maximum slide width, gap, direction, transition, and hover pause inside an accessible native “Layout & behavior” disclosure. Settings persist in the shareable URL and generate a complete example with a bounded container and working navigation/pause buttons. Reset restores layout and playback defaults without discarding interactive content.
+
+Status derives from the real viewport and interaction state: all slides fit, system reduced motion, explicitly paused, hidden tab, focus inside, pointer inside, finite end reached, or autoplay on. The stage also shows the currently intersecting slide range. Finite navigation disables unavailable previous/next controls; RTL changes their arrow direction. Slide state is retained when settings change.
 
 ## Deliberate Taste exceptions
 
@@ -49,3 +59,4 @@ Actual tablet headline wrapping and vertical overlap were fixed after opening th
 - `few-pictures` / `no-footage`: a real live carousel is the product evidence; stock media would distract from it and increase weight.
 - `side-scroll` / `one-sided-bleed`: the actual horizontal carousel intentionally reveals the next slide. Buttons and a swipe/keyboard hint make the affordance explicit.
 - `still-page`: screenshots use paused autoplay for deterministic review; the actual carousel motion is browser-tested. No additional page-motion quota is appropriate.
+- `off-centre` / `edge-text`: the 2026-11-09 wider inspection includes the measured text bounds of slides and code beyond their scroll-clipping viewport. The actual frame has equal margins; the document has zero horizontal overflow at 2560, 1440, 768, and 390px, and opened screenshots confirm these are intentionally clipped scrollers.

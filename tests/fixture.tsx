@@ -26,7 +26,7 @@ function Fixture() {
   const ref = useRef<RerouselHandle>(null);
   const [stop, setStop] = useState(params.get('auto') !== 'true');
   const [loop, setLoop] = useState(true);
-  const [count, setCount] = useState(4);
+  const [count, setCount] = useState(Number(params.get('count')) || 4);
   const [wide, setWide] = useState(false);
   return (
     <main>
@@ -39,15 +39,24 @@ function Fixture() {
         <button onClick={() => setCount(count > 1 ? count - 1 : 4)}>Remove slide</button>
         <button onClick={() => setWide(!wide)}>Resize</button>
       </div>
-      <div className={wide ? 'fixture-width wide' : 'fixture-width'}>
+      <div
+        className={wide ? 'fixture-width wide' : 'fixture-width'}
+        style={params.has('width') ? { width: `min(${Number(params.get('width'))}px, 100%)` } : undefined}
+      >
         <Rerousel
           ref={ref}
           aria-label="Fixture carousel"
           stop={stop}
           loop={loop}
-          interval={1000}
+          pauseOnHover={params.get('hover') !== 'false'}
+          interval={Number(params.get('interval')) || 1000}
+          itemWidth={Number(params.get('itemWidth')) || undefined}
+          behavior={params.get('behavior') === 'instant' ? 'instant' : 'smooth'}
           dir={params.get('rtl') === 'true' ? 'rtl' : 'ltr'}
-          style={{ gap: 16 }}
+          style={{
+            gap: params.has('gap') ? Number(params.get('gap')) : 16,
+            scrollBehavior: params.get('cssSmooth') === 'true' ? 'smooth' : undefined,
+          }}
         >
           {Array.from({ length: count }, (_, index) => (
             <Slide key={index} index={index} />

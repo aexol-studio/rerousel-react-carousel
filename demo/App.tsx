@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, version as reactVersion } from 'react';
+import { useEffect, useRef, useState, version as reactVersion, type CSSProperties } from 'react';
 import { Rerousel, type RerouselHandle } from 'rerousel';
 import size from '../lib/size.json';
 
@@ -7,11 +7,20 @@ const npm = 'https://www.npmjs.com/package/rerousel';
 const initial = new URLSearchParams(window.location.search);
 const validMode = (value: string | null) => (value === 'interactive' ? 'interactive' : 'posters');
 const initialInterval = Number(initial.get('interval'));
+const initialNumber = (key: string, fallback: number, min: number, max: number) => {
+  const value = Number(initial.get(key));
+  return initial.has(key) && value >= min && value <= max ? value : fallback;
+};
 const defaults = {
   mode: validMode(initial.get('demo')),
   interval: initialInterval >= 1000 && initialInterval <= 6000 ? initialInterval : 3000,
   loop: initial.get('loop') !== 'false',
   stop: initial.get('paused') === 'true',
+  width: initialNumber('width', 320, 240, 440),
+  gap: initialNumber('gap', 16, 0, 40),
+  direction: initial.get('direction') === 'rtl' ? 'rtl' : 'ltr',
+  hover: initial.get('hover') !== 'false',
+  behavior: initial.get('behavior') === 'instant' ? ('instant' as const) : ('smooth' as const),
 };
 
 function Arrow({ back = false }: { back?: boolean }) {
@@ -61,7 +70,7 @@ function CopyButton({ value, label = 'Copy code' }: { value: string; label?: str
 function CounterSlide() {
   const [count, setCount] = useState(0);
   return (
-    <article className="slide interactive-slide">
+    <article dir="auto" className="slide interactive-slide">
       <span className="slide-kicker">Real React state</span>
       <div className="counter-value" aria-live="polite">
         {count}
@@ -76,7 +85,7 @@ function CounterSlide() {
 
 function InputSlide() {
   return (
-    <article className="slide input-slide">
+    <article dir="auto" className="slide input-slide">
       <span className="slide-kicker">Real inputs, too</span>
       <div>
         <label htmlFor="slide-note">Leave yourself a note</label>
@@ -87,11 +96,42 @@ function InputSlide() {
   );
 }
 
+function ChoiceSlide() {
+  const [selected, setSelected] = useState(false);
+  return (
+    <article dir="auto" className="slide choice-slide">
+      <span className="slide-kicker">Your own controls</span>
+      <div>
+        <h3>Make a choice.</h3>
+        <label className="slide-choice">
+          <input type="checkbox" checked={selected} onChange={(event) => setSelected(event.target.checked)} />
+          <span>Save this idea</span>
+        </label>
+      </div>
+      <p>{selected ? 'Saved. It stays selected across loops.' : 'Native controls keep their state, too.'}</p>
+    </article>
+  );
+}
+
+function DetailsSlide() {
+  return (
+    <article dir="auto" className="slide details-slide">
+      <span className="slide-kicker">Real disclosure</span>
+      <details>
+        <summary>What’s inside?</summary>
+        <p>Whatever you build. This is a native details element, and it stays open as you navigate.</p>
+      </details>
+      <p>Open it. Go around. Come back.</p>
+    </article>
+  );
+}
+
 const apiRows = [
   ['children', 'ReactNode', '—', 'Your slide elements. Set their widths in your CSS.'],
   ['interval', 'number', '3000', 'Milliseconds between advances. Set ≤ 0 to disable autoplay.'],
   ['stop', 'boolean', 'false', 'Pause autoplay. Manual controls still work.'],
-  ['loop', 'boolean', 'true', 'Return to the start at the end, with an instant reset.'],
+  ['loop', 'boolean', 'true', 'Return to the start after the last scroll position.'],
+  ['behavior', "'smooth' | 'instant'", "'smooth'", 'Scroll transition, including the return to the start.'],
   ['pauseOnHover', 'boolean', 'true', 'Pause while the pointer is over a slide.'],
   ['itemWidth', 'number', 'auto', 'Optional fixed advance distance in CSS pixels.'],
   ['itemRef', 'RefObject', '—', 'Deprecated. Accepted for migration; no longer needed.'],
@@ -103,14 +143,64 @@ export function App() {
   const [interval, setIntervalValue] = useState(defaults.interval);
   const [stop, setStop] = useState(defaults.stop);
   const [loop, setLoop] = useState(defaults.loop);
+  const [slideWidth, setSlideWidth] = useState(defaults.width);
+  const [gap, setGap] = useState(defaults.gap);
+  const [direction, setDirection] = useState(defaults.direction);
+  const [pauseOnHover, setPauseOnHover] = useState(defaults.hover);
+  const [behavior, setBehavior] = useState(defaults.behavior);
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [hidden, setHidden] = useState(document.hidden);
+  const [position, setPosition] = useState({ overflow: false, start: true, end: false, first: 1, last: 1 });
   const [reduced, setReduced] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
   const carousel = useRef<RerouselHandle>(null);
   useEffect(() => {
     const media = matchMedia('(prefers-reduced-motion: reduce)');
     const change = () => setReduced(media.matches);
     media.addEventListener('change', change);
-    return () => media.removeEventListener('change', change);
+    const visibility = () => setHidden(document.hidden);
+    document.addEventListener('visibilitychange', visibility);
+    return () => {
+      media.removeEventListener('change', change);
+      document.removeEventListener('visibilitychange', visibility);
+    };
   }, []);
+  useEffect(() => {
+    const element = carousel.current?.element;
+    if (!element) return;
+    const measure = () => {
+      const max = element.scrollWidth - element.clientWidth;
+      const offset = Math.abs(element.scrollLeft);
+      const bounds = element.getBoundingClientRect();
+      const visible = Array.from(element.children).flatMap((slide, index) => {
+        const rect = slide.getBoundingClientRect();
+        return rect.right > bounds.left + 1 && rect.left < bounds.right - 1 ? [index + 1] : [];
+      });
+      const next = {
+        overflow: max > 1,
+        start: offset <= 1,
+        end: offset >= max - 1,
+        first: visible[0] ?? 1,
+        last: visible[visible.length - 1] ?? 1,
+      };
+      setPosition((current) =>
+        Object.keys(next).every((key) => current[key as keyof typeof next] === next[key as keyof typeof next])
+          ? current
+          : next,
+      );
+    };
+    const resize = new ResizeObserver(measure);
+    resize.observe(element);
+    for (const slide of element.children) resize.observe(slide);
+    element.addEventListener('scroll', measure, { passive: true });
+    setHovered(element.matches(':hover'));
+    setFocused(element.contains(document.activeElement));
+    measure();
+    return () => {
+      resize.disconnect();
+      element.removeEventListener('scroll', measure);
+    };
+  }, [mode, slideWidth, gap, direction]);
   useEffect(() => {
     const url = new URL(window.location.href);
     url.search = '';
@@ -118,10 +208,40 @@ export function App() {
     if (interval !== 3000) url.searchParams.set('interval', String(interval));
     if (stop) url.searchParams.set('paused', 'true');
     if (!loop) url.searchParams.set('loop', 'false');
+    if (slideWidth !== 320) url.searchParams.set('width', String(slideWidth));
+    if (gap !== 16) url.searchParams.set('gap', String(gap));
+    if (direction !== 'ltr') url.searchParams.set('direction', direction);
+    if (!pauseOnHover) url.searchParams.set('hover', 'false');
+    if (behavior !== 'smooth') url.searchParams.set('behavior', behavior);
     window.history.replaceState(null, '', url);
-  }, [mode, interval, stop, loop]);
+  }, [mode, interval, stop, loop, slideWidth, gap, direction, pauseOnHover, behavior]);
 
-  const code = `import { Rerousel } from 'rerousel';\n\nexport function Gallery() {\n  return (\n    <Rerousel interval={${interval}}${stop ? ' stop' : ''}${!loop ? ' loop={false}' : ''}\n      aria-label="Selected work"\n      style={{ gap: 16 }}>\n      {['Make', 'Something', 'Move'].map((title) => (\n        <article key={title} style={{ width: 280 }}>\n          <h2>{title}</h2>\n        </article>\n      ))}\n    </Rerousel>\n  );\n}`;
+  const status = !position.overflow
+    ? 'All slides fit'
+    : reduced
+      ? 'Reduced motion on'
+      : stop
+        ? 'Autoplay paused'
+        : hidden
+          ? 'Paused · tab hidden'
+          : focused
+            ? 'Paused · focus inside'
+            : pauseOnHover && hovered
+              ? 'Paused · pointer inside'
+              : !loop && position.end
+                ? 'End reached'
+                : 'Autoplay on';
+  const reset = () => {
+    setIntervalValue(3000);
+    setLoop(true);
+    setStop(false);
+    setSlideWidth(320);
+    setGap(16);
+    setDirection('ltr');
+    setPauseOnHover(true);
+    setBehavior('smooth');
+  };
+  const code = `import { useRef, useState } from 'react';\nimport { Rerousel, type RerouselHandle } from 'rerousel';\n\nexport function Gallery() {\n  const carousel = useRef<RerouselHandle>(null);\n  const [paused, setPaused] = useState(${stop});\n\n  return (\n    <section style={{ width: 'min(100%, 1040px)', minWidth: 0 }}>\n      <Rerousel\n        ref={carousel}\n        interval={${interval}}\n        stop={paused}\n        loop={${loop}}\n        pauseOnHover={${pauseOnHover}}\n        behavior="${behavior}"\n        dir="${direction}"\n        aria-label="Selected work"\n        style={{ gap: ${gap} }}\n      >\n        {['Make', 'Something', 'Move', 'Your', 'Own', 'Way'].map((title) => (\n          <article key={title} dir="auto"\n            style={{ width: 'min(${slideWidth}px, calc(100% - 32px))' }}>\n            <h2>{title}</h2>\n          </article>\n        ))}\n      </Rerousel>\n      <button onClick={() => carousel.current?.previous()}>Previous</button>\n      <button onClick={() => carousel.current?.next()}>Next</button>\n      <button onClick={() => setPaused(!paused)}>\n        {paused ? 'Resume autoplay' : 'Pause autoplay'}\n      </button>\n    </section>\n  );\n}`;
 
   return (
     <>
@@ -131,7 +251,7 @@ export function App() {
       <div className="hero-field">
         <header className="header frame">
           <a className="wordmark" href="#" aria-label="Rerousel home" translate="no">
-            rerousel<span aria-hidden="true">↻</span>
+            <img src="/logo-dark.svg" width="169" height="32" alt="" />
           </a>
           <nav aria-label="Main navigation">
             <a href="#playground">Playground</a>
@@ -179,9 +299,7 @@ export function App() {
             <div className="stage" data-ui="live-carousel">
               <div className="stage-top">
                 <h2 id="playground-title">Put it in motion</h2>
-                <span className="stage-status">
-                  {reduced ? 'Reduced motion on' : stop ? 'Autoplay paused' : 'Autoplay on'}
-                </span>
+                <span className="stage-status">{status}</span>
               </div>
               <Rerousel
                 key={mode}
@@ -189,12 +307,22 @@ export function App() {
                 interval={interval}
                 stop={stop}
                 loop={loop}
+                pauseOnHover={pauseOnHover}
+                behavior={behavior}
+                dir={direction}
                 className="demo-carousel"
+                style={{ '--slide-width': `${slideWidth}px`, gap } as CSSProperties}
                 aria-label={mode === 'posters' ? 'Typographic poster examples' : 'Interactive React examples'}
+                onPointerEnter={() => setHovered(true)}
+                onPointerLeave={() => setHovered(false)}
+                onFocus={() => setFocused(true)}
+                onBlur={(event) => {
+                  if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false);
+                }}
               >
                 {mode === 'posters'
                   ? [
-                      <article className="slide poster poster-make" key="make">
+                      <article dir="auto" className="slide poster poster-make" key="make">
                         <span className="slide-kicker">Your next idea</span>
                         <strong>
                           MAKE
@@ -205,7 +333,7 @@ export function App() {
                         </strong>
                         <span className="poster-foot">Anything you can render.</span>
                       </article>,
-                      <article className="slide poster poster-less" key="less">
+                      <article dir="auto" className="slide poster poster-less" key="less">
                         <span className="slide-kicker">Keep it light</span>
                         <strong>
                           LESS
@@ -216,7 +344,7 @@ export function App() {
                         </strong>
                         <span className="poster-foot">Zero runtime dependencies.</span>
                       </article>,
-                      <article className="slide poster poster-loop" key="loop">
+                      <article dir="auto" className="slide poster poster-loop" key="loop">
                         <span className="slide-kicker">Take another look</span>
                         <strong>
                           LOOP
@@ -227,7 +355,7 @@ export function App() {
                         </strong>
                         <span className="poster-foot">Your styles. Your content.</span>
                       </article>,
-                      <article className="slide poster poster-yours" key="yours">
+                      <article dir="auto" className="slide poster poster-yours" key="yours">
                         <span className="slide-kicker">No design attached</span>
                         <strong>
                           MAKE
@@ -238,11 +366,33 @@ export function App() {
                         </strong>
                         <span className="poster-foot">A little React goes a long way.</span>
                       </article>,
+                      <article dir="auto" className="slide poster poster-next" key="next">
+                        <span className="slide-kicker">Go at your own pace</span>
+                        <strong>
+                          NEXT
+                          <br />
+                          GOOD
+                          <br />
+                          THING.
+                        </strong>
+                        <span className="poster-foot">Touch. Keys. Your controls.</span>
+                      </article>,
+                      <article dir="auto" className="slide poster poster-back" key="back">
+                        <span className="slide-kicker">One more time</span>
+                        <strong>
+                          BACK
+                          <br />
+                          FOR
+                          <br />
+                          MORE.
+                        </strong>
+                        <span className="poster-foot">Try the return to the first slide.</span>
+                      </article>,
                     ]
                   : [
                       <CounterSlide key="counter" />,
                       <InputSlide key="input" />,
-                      <article className="slide link-slide" key="link">
+                      <article dir="auto" className="slide link-slide" key="link">
                         <span className="slide-kicker">Real links</span>
                         <strong>
                           GO
@@ -254,24 +404,34 @@ export function App() {
                         </a>
                         <p>Everything inside is your component.</p>
                       </article>,
+                      <ChoiceSlide key="choice" />,
+                      <DetailsSlide key="details" />,
                     ]}
               </Rerousel>
               <div className="stage-bottom">
-                <span>Swipe, or focus here and use ← →</span>
+                <span className="navigation-hint">
+                  <span className="slide-position">
+                    {position.first === position.last ? position.first : `${position.first}–${position.last}`}
+                    <span> / {mode === 'posters' ? 6 : 5} slides</span>
+                  </span>
+                  Swipe, or focus the slides and use ← →
+                </span>
                 <div className="carousel-buttons">
                   <button
                     className="icon-button"
                     aria-label="Previous slide"
+                    disabled={!position.overflow || (!loop && position.start)}
                     onClick={() => carousel.current?.previous()}
                   >
-                    <Arrow back />
+                    <Arrow back={direction !== 'rtl'} />
                   </button>
                   <button
                     className="icon-button"
                     aria-label="Next slide"
+                    disabled={!position.overflow || (!loop && position.end)}
                     onClick={() => carousel.current?.next()}
                   >
-                    <Arrow />
+                    <Arrow back={direction === 'rtl'} />
                   </button>
                 </div>
               </div>
@@ -279,8 +439,7 @@ export function App() {
             <aside className="playground-controls" aria-label="Playground settings">
               <h3>Give it a spin</h3>
               <p>
-                This is the real package.
-                <br />
+                This is the real package. <br />
                 Change a setting. See it happen.
               </p>
               <fieldset className="mode-control">
@@ -308,19 +467,88 @@ export function App() {
                   </label>
                 </div>
               </fieldset>
-              <label className="range-label" htmlFor="interval">
-                Advance every <output htmlFor="interval">{(interval / 1000).toFixed(1)} s</output>
-              </label>
-              <input
-                id="interval"
-                name="interval"
-                type="range"
-                min="1000"
-                max="6000"
-                step="500"
-                value={interval}
-                onChange={(event) => setIntervalValue(Number(event.target.value))}
-              />
+              <div className="slider-setting">
+                <label className="range-label" htmlFor="interval">
+                  Advance every <output htmlFor="interval">{(interval / 1000).toFixed(1)} s</output>
+                </label>
+                <input
+                  id="interval"
+                  name="interval"
+                  type="range"
+                  min="1000"
+                  max="6000"
+                  step="500"
+                  value={interval}
+                  onChange={(event) => setIntervalValue(Number(event.target.value))}
+                />
+              </div>
+              <details className="layout-settings">
+                <summary>Layout & behavior</summary>
+                <div className="slider-setting">
+                  <label className="range-label" htmlFor="slide-width">
+                    Max slide width <output htmlFor="slide-width">{slideWidth} px</output>
+                  </label>
+                  <input
+                    id="slide-width"
+                    name="width"
+                    type="range"
+                    min="240"
+                    max="440"
+                    step="20"
+                    value={slideWidth}
+                    onChange={(event) => setSlideWidth(Number(event.target.value))}
+                  />
+                </div>
+                <div className="slider-setting">
+                  <label className="range-label" htmlFor="slide-gap">
+                    Gap <output htmlFor="slide-gap">{gap} px</output>
+                  </label>
+                  <input
+                    id="slide-gap"
+                    name="gap"
+                    type="range"
+                    min="0"
+                    max="40"
+                    step="4"
+                    value={gap}
+                    onChange={(event) => setGap(Number(event.target.value))}
+                  />
+                </div>
+                <div className="select-setting">
+                  <label htmlFor="direction">Direction</label>
+                  <select
+                    id="direction"
+                    name="direction"
+                    value={direction}
+                    onChange={(event) => setDirection(event.target.value)}
+                  >
+                    <option value="ltr">Left to right</option>
+                    <option value="rtl">Right to left</option>
+                  </select>
+                </div>
+                <div className="select-setting">
+                  <label htmlFor="behavior">Transition</label>
+                  <select
+                    id="behavior"
+                    name="behavior"
+                    value={behavior}
+                    onChange={(event) => setBehavior(event.target.value as 'smooth' | 'instant')}
+                  >
+                    <option value="smooth">Smooth scroll</option>
+                    <option value="instant">Instant</option>
+                  </select>
+                </div>
+                <label className="check-label">
+                  <span>Pause on hover</span>
+                  <input
+                    name="hover"
+                    type="checkbox"
+                    checked={pauseOnHover}
+                    onChange={(event) => setPauseOnHover(event.target.checked)}
+                  />
+                </label>
+                <p>Slide widths adapt to small screens. Focus and reduced motion always pause autoplay.</p>
+              </details>
               <label className="check-label">
                 <span>Loop at the end</span>
                 <input
@@ -342,11 +570,18 @@ export function App() {
               <p className="control-note">
                 {reduced
                   ? 'Your system preference disables autoplay. Previous and next still work.'
-                  : 'Autoplay pauses on hover and focus. Your settings update the code below.'}
+                  : !position.overflow
+                    ? 'Everything fits. Increase the slide width to make room for scrolling.'
+                    : 'Your settings update the code and this page’s shareable URL.'}
               </p>
-              <a className="text-link" href="#example">
-                Get the code <span aria-hidden="true">↓</span>
-              </a>
+              <div className="settings-actions">
+                <a className="text-link" href="#example">
+                  Get the code <span aria-hidden="true">↓</span>
+                </a>
+                <button className="reset-button" onClick={reset}>
+                  Reset settings
+                </button>
+              </div>
             </aside>
           </section>
           <div className="hero-bottom frame">
@@ -412,8 +647,8 @@ export function App() {
               <div className="example-intro">
                 <h2 id="example-title">Try it in your project</h2>
                 <p>
-                  This example follows your autoplay and loop settings above. No ref is required to measure
-                  slides.
+                  This example follows your layout, direction, and playback settings above. A bounded
+                  container keeps the slides scrollable on large screens. Replace the titles with your JSX.
                 </p>
               </div>
               <div className="code-panel">
@@ -469,9 +704,9 @@ export function App() {
                 <details>
                   <summary>How does the loop work?</summary>
                   <p>
-                    Each slide renders once. Rerousel scrolls between your slides, then instantly returns to
-                    the start at the end. It is a carousel with a boundary reset, rather than a continuous
-                    marquee.
+                    Each slide renders once. After the last scroll position, the next advance scrolls back to
+                    the beginning using your chosen transition. Smooth scrolling is the default; choose
+                    Instant in the playground to compare. This return preserves every live component.
                   </p>
                 </details>
                 <details>
