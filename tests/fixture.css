@@ -1,0 +1,39 @@
+body {
+  margin: 20px;
+  font-family: system-ui;
+}
+button,
+input {
+  min-height: 44px;
+  font: inherit;
+}
+.controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-block: 20px;
+}
+.fixture-width {
+  width: min(640px, 100%);
+}
+.fixture-width.wide {
+  width: min(900px, 100%);
+}
+.fixture-slide {
+  width: 240px;
+  padding: 20px;
+  background: #eee;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.fixture-slide:nth-child(2) {
+  width: 300px;
+}
+.fixture-slide:nth-child(3) {
+  width: 260px;
+}
+.fixture-slide input {
+  width: 100%;
+  min-width: 0;
+}

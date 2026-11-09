@@ -1,63 +1,93 @@
 {
-    "name": "rerousel",
-    "version": "0.1.9",
-    "description": "React carousel",
-    "main": "lib/index.js",
-    "private": false,
-    "scripts": {
-        "test": "jest",
-        "test:watch": "jest --watch",
-        "start": "snowpack dev --polyfill-node",
-        "build:sandbox": "snowpack build --polyfill-node",
-        "build": "ttsc --build tsconfig.build.json",
-        "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix"
+  "name": "rerousel",
+  "version": "1.0.0",
+  "description": "A tiny, dependency-free React carousel with native scrolling and interactive slides.",
+  "type": "module",
+  "main": "./lib/index.cjs",
+  "module": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      },
+      "require": {
+        "types": "./lib/index.d.cts",
+        "default": "./lib/index.cjs"
+      }
     },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/aexol-studio/rerousel.git"
-    },
-    "author": "Aexol <aexol@aexol.com> (http://aexol.com)",
-    "license": "MIT",
-    "keywords": [
-        "carousel",
-        "simple",
-        "lightweight",
-        "react carousel",
-        "react"
-    ],
-    "bugs": {
-        "url": "https://github.com/aexol-studio/rerousel/issues"
-    },
-    "homepage": "https://github.com/aexol-studio/rerousel#readme",
-    "devDependencies": {
-        "@snowpack/plugin-typescript": "^1.2.0",
-        "@types/jest": "^26.0.20",
-        "@types/react": "^17.0.0",
-        "@types/react-dom": "^17.0.0",
-        "@types/styled-components": "^5.1.7",
-        "@typescript-eslint/eslint-plugin": "^4.13.0",
-        "@typescript-eslint/parser": "^4.13.0",
-        "eslint": "^7.17.0",
-        "eslint-config-prettier": "^7.1.0",
-        "eslint-plugin-prettier": "^3.3.1",
-        "eslint-plugin-react": "^7.22.0",
-        "jest": "^26.6.3",
-        "prettier": "^2.2.1",
-        "react": "^17.0.1",
-        "react-dom": "^17.0.1",
-        "react-live": "^2.2.3",
-        "snowpack": "^3.0.10",
-        "styled-components": "^5.2.1",
-        "ts-jest": "^26.4.4",
-        "ttypescript": "^1.5.12",
-        "typescript": "^4.1.3",
-        "typescript-transform-paths": "^2.2.2"
-    },
-    "peerDependencies": {
-        "react": ">=16.12.0",
-        "react-dom": ">=16.12.0"
-    },
-    "dependencies": {
-        "typestyle": "^2.1.0"
-    }
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "start": "vite --host 127.0.0.1",
+    "build": "node scripts/build.mjs && node scripts/size.mjs",
+    "build:sandbox": "npm run build && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:browser": "playwright test",
+    "size": "node scripts/size.mjs",
+    "check": "npm run build:sandbox && npm run lint && npm run typecheck && npm test",
+    "prepublishOnly": "npm run check && npm audit --audit-level=low",
+    "test:compat": "node scripts/compat.mjs",
+    "test:package": "node scripts/package-smoke.mjs",
+    "format": "prettier --write .",
+    "lint": "prettier --check ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aexol-studio/rerousel-react-carousel.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aexol-studio/rerousel-react-carousel/issues"
+  },
+  "homepage": "https://rerousel.netlify.app/",
+  "author": "Aexol <aexol@aexol.com> (https://aexol.com)",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "carousel",
+    "infinite-carousel",
+    "lightweight",
+    "slider",
+    "typescript",
+    "react19",
+    "zero-dependency"
+  ],
+  "peerDependencies": {
+    "react": "^18.3.1 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@fontsource/barlow": "5.3.0",
+    "@fontsource/barlow-condensed": "5.3.0",
+    "@playwright/test": "1.64.1",
+    "@types/node": "26.6.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "esbuild": "0.28.2",
+    "happy-dom": "21.0.4",
+    "prettier": "3.9.10",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "typescript": "7.0.2",
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "engines": {
+    "node": ">=18"
+  }
 }

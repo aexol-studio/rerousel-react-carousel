@@ -1,0 +1,43 @@
+name: Publish npm release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Exact package.json version to publish (for example 1.0.0)'
+        type: string
+        required: true
+permissions:
+  contents: read
+jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+  publish:
+    needs: verify
+    runs-on: ubuntu-24.04
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          cache: npm
+      - run: npm install --global npm@12.2.1
+      - run: npm ci
+      - name: Validate version and release branch
+        env:
+          EXPECTED_VERSION: ${{ inputs.version }}
+        run: |
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+            if (pkg.version !== process.env.EXPECTED_VERSION) throw Error("Version does not match package.json");
+            if (process.env.GITHUB_REF !== "refs/heads/master") throw Error("Publish only from master");
+          '
+      - name: Publish to npm
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}

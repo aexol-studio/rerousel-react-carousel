@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://rerousel.netlify.app/sitemap.xml

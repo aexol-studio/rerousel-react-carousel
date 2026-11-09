@@ -1,0 +1,9 @@
+node_modules
+lib
+dist
+.compat
+.taste-skill
+playwright-report
+test-results
+package-lock.json
+public
