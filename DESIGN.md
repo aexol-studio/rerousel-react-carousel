@@ -24,7 +24,11 @@ Buttons have explicit hover, active, focus-visible, and disabled states; minimum
 
 ## Library tradeoff
 
-Each React slide renders once. Autoplay uses native scrolling between real slide positions, then scrolls back to the start after the last position. The `behavior` setting chooses smooth (default) or instant movement, including this return. This prioritizes fully interactive content and a small reliable implementation; it is not a continuous marquee. No cloned React trees, duplicated IDs, inert copies, or remounted slide state. When all items fit, autoplay does no work. Fixed item widths are optional; actual offsets account for variable widths, borders, padding and gaps. The original itemRef is accepted but no longer required.
+Each React slide renders once. Seamless looping changes the CSS `order` of fully offscreen slides and compensates the native scroll position in the same update, so the first slide follows the last in the current direction without a visible rewind. Native smooth scrolling owns the actual advances; no animation library, cloned React trees, duplicated IDs, inert copies or remounted slide state are introduced. `behavior` chooses smooth (default) or instant movement. Autoplay remains a sequence of advances with reading time between them.
+
+A single live slide cannot occupy both viewport edges at once. Looping therefore needs overflow of at least the widest outer slide (including inline margins) plus the gap. Insufficient spare content uses finite scrolling, and fully fitting content stays idle. Recommend two spare slides beyond the maximum visible count to leave native gesture room in both directions. The demo provides six posters or five interactive slides for at most three visible slides.
+
+The component owns slide CSS `order` while looping; DOM order is unchanged for screen readers and Tab navigation. Focused slides are not recycled, and focus pauses autoplay. Native `scrollLeft` may recenter during hidden-slide recycling; custom indicators must use visible slide geometry, not a fixed scroll-offset-to-index formula. Fixed advance distances are optional; actual offsets otherwise account for unequal widths, borders, padding and gaps. The original itemRef is accepted but no longer required.
 
 ## Wide-screen playground revision
 
@@ -34,7 +38,7 @@ The bounded 1512px page presents six posters or five distinct interactive exampl
 
 Keep common controls immediately visible: content, advance interval, looping, and pause/resume. Put “Fit full slides,” maximum slide width, gap, direction, transition, and hover pause inside an accessible native “Layout & behavior” disclosure. Full-slide fitting is enabled by default; disabling it enables the maximum-width slider and restores the optional partial-slide preview. Settings persist in the shareable URL and generate a complete example with a bounded container and working navigation/pause buttons. Reset restores layout and playback defaults without discarding interactive content. Sizing remains demo CSS and adds no library runtime code.
 
-Status derives from the real viewport and interaction state: all slides fit, system reduced motion, explicitly paused, hidden tab, focus inside, pointer inside, finite end reached, or autoplay on. The stage also shows the currently intersecting slide range. Finite navigation disables unavailable previous/next controls; RTL changes their arrow direction. Slide state is retained when settings change.
+Status derives from the real viewport and interaction state: all slides fit, system reduced motion, explicitly paused, hidden tab, focus inside, pointer inside, finite end reached, or autoplay on. The stage also identifies the currently intersecting slides in their visual order, including a sequence that crosses the last-to-first seam. Finite navigation disables unavailable previous/next controls; RTL changes their arrow direction. Slide state is retained when settings change.
 
 ## Deliberate Taste exceptions
 

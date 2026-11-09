@@ -32,8 +32,8 @@ async function expectPosition(carousel: Locator, expected: number) {
 }
 
 for (const direction of ['ltr', 'rtl']) {
-  test(`unequal slides complete exact forward and backward cycles in ${direction}`, async ({ page }) => {
-    await page.goto(`/tests/fixture.html?rtl=${direction === 'rtl'}`);
+  test(`unequal slides reach exact forward and backward finite stops in ${direction}`, async ({ page }) => {
+    await page.goto(`/tests/fixture.html?loop=false&rtl=${direction === 'rtl'}`);
     const carousel = page.getByRole('region', { name: 'Fixture carousel' });
     const { stops } = await geometry(carousel);
     await page.getByLabel('Note 0').fill('One live input');
@@ -43,11 +43,11 @@ for (const direction of ['ltr', 'rtl']) {
     await page.getByRole('button', { name: 'Count 0: 0' }).click();
 
     for (let cycle = 0; cycle < 2; cycle++) {
-      for (const stop of [...stops.slice(1), 0]) {
+      for (const stop of stops.slice(1)) {
         await page.getByRole('button', { name: 'Next', exact: true }).click();
         await expectPosition(carousel, stop);
       }
-      for (const stop of [...stops.slice(1)].reverse().concat(0)) {
+      for (const stop of stops.slice(0, -1).reverse()) {
         await page.getByRole('button', { name: 'Previous', exact: true }).click();
         await expectPosition(carousel, stop);
       }
@@ -59,9 +59,11 @@ for (const direction of ['ltr', 'rtl']) {
     await expect(page.getByRole('button', { name: 'Count 0: 1' })).toBeVisible();
   });
 
-  test(`padded ${direction} viewports honor native snap positions and wrap backward`, async ({ page }) => {
+  test(`padded finite ${direction} viewports honor native snap positions in both directions`, async ({
+    page,
+  }) => {
     for (const padding of ['0px', '20px', '5%']) {
-      await page.goto(`/tests/fixture.html?rtl=${direction === 'rtl'}&behavior=instant`);
+      await page.goto(`/tests/fixture.html?loop=false&rtl=${direction === 'rtl'}&behavior=instant`);
       const carousel = page.getByRole('region', { name: 'Fixture carousel' });
       await carousel.evaluate((el, padding) => {
         el.style.paddingInline = '20px';
@@ -71,11 +73,11 @@ for (const direction of ['ltr', 'rtl']) {
       await carousel.focus();
       await page.keyboard.press('Home');
       await expectPosition(carousel, stops[0]);
-      for (const expected of [...stops.slice(1), stops[0]]) {
+      for (const expected of stops.slice(1)) {
         await page.getByRole('button', { name: 'Next', exact: true }).click();
         await expectPosition(carousel, expected);
       }
-      for (const expected of [...stops.slice(1)].reverse().concat(stops[0])) {
+      for (const expected of stops.slice(0, -1).reverse()) {
         await page.getByRole('button', { name: 'Previous', exact: true }).click();
         await expectPosition(carousel, expected);
       }
@@ -86,7 +88,7 @@ for (const direction of ['ltr', 'rtl']) {
 test('rapid commands advance from the requested destination and can reverse before settling', async ({
   page,
 }) => {
-  await page.goto('/tests/fixture.html');
+  await page.goto('/tests/fixture.html?loop=false');
   const carousel = page.getByRole('region', { name: 'Fixture carousel' });
   const { stops } = await geometry(carousel);
   const next = page.getByRole('button', { name: 'Next', exact: true });
@@ -108,7 +110,7 @@ test('rapid commands advance from the requested destination and can reverse befo
 test('fixed distances advance without native snap canceling or changing the requested step', async ({
   page,
 }) => {
-  await page.goto('/tests/fixture.html?itemWidth=100');
+  await page.goto('/tests/fixture.html?loop=false&itemWidth=100');
   const carousel = page.getByRole('region', { name: 'Fixture carousel' });
   for (const expected of [100, 200, 300]) {
     await page.getByRole('button', { name: 'Next', exact: true }).click();
@@ -118,18 +120,18 @@ test('fixed distances advance without native snap canceling or changing the requ
   await expectPosition(carousel, 200);
 });
 
-test('instant behavior overrides CSS smooth scrolling at both boundaries', async ({ page }) => {
-  await page.goto('/tests/fixture.html?behavior=instant&cssSmooth=true');
+test('instant behavior overrides CSS smooth scrolling in both directions', async ({ page }) => {
+  await page.goto('/tests/fixture.html?loop=false&behavior=instant&cssSmooth=true');
   const carousel = page.getByRole('region', { name: 'Fixture carousel' });
-  const { maximum } = await geometry(carousel);
-  await page.getByRole('button', { name: 'Previous', exact: true }).click();
-  expect((await geometry(carousel)).position).toBeCloseTo(maximum, 0);
+  const { stops } = await geometry(carousel);
   await page.getByRole('button', { name: 'Next', exact: true }).click();
+  expect((await geometry(carousel)).position).toBeCloseTo(stops[1], 0);
+  await page.getByRole('button', { name: 'Previous', exact: true }).click();
   expect((await geometry(carousel)).position).toBe(0);
 });
 
 test('fractional slide widths and gaps do not strand navigation between snap points', async ({ page }) => {
-  await page.goto('/tests/fixture.html?gap=16.6');
+  await page.goto('/tests/fixture.html?loop=false&gap=16.6');
   const carousel = page.getByRole('region', { name: 'Fixture carousel' });
   await carousel.evaluate((el) => {
     Array.from(el.children).forEach((slide, index) => {
@@ -137,18 +139,18 @@ test('fractional slide widths and gaps do not strand navigation between snap poi
     });
   });
   const { stops } = await geometry(carousel);
-  for (const expected of [...stops.slice(1), 0]) {
+  for (const expected of stops.slice(1)) {
     await page.getByRole('button', { name: 'Next', exact: true }).click();
     await expectPosition(carousel, expected);
   }
-  for (const expected of [...stops.slice(1)].reverse().concat(0)) {
+  for (const expected of stops.slice(0, -1).reverse()) {
     await page.getByRole('button', { name: 'Previous', exact: true }).click();
     await expectPosition(carousel, expected);
   }
 });
 
 test('manual scrolling and resize replace the previous navigation destination', async ({ page }) => {
-  await page.goto('/tests/fixture.html?behavior=instant');
+  await page.goto('/tests/fixture.html?loop=false&behavior=instant');
   const carousel = page.getByRole('region', { name: 'Fixture carousel' });
   await page.getByRole('button', { name: 'Next', exact: true }).click();
   await carousel.evaluate((el) => el.scrollTo({ left: el.scrollWidth, behavior: 'instant' }));
@@ -164,15 +166,16 @@ test('manual scrolling and resize replace the previous navigation destination', 
   await expect(page.locator('[data-slide]')).toHaveCount(3);
   ({ stops } = await geometry(carousel));
   await page.getByRole('button', { name: 'Next', exact: true }).click();
-  await expectPosition(carousel, 0);
+  await expectPosition(carousel, stops[stops.length - 1]);
+  await carousel.focus();
+  await page.keyboard.press('Home');
+  await expectPosition(carousel, stops[0]);
   await page.getByRole('button', { name: 'Next', exact: true }).click();
   await expectPosition(carousel, stops[1] ?? 0);
 });
 
-test('autoplay completes a full loop and leaves a full reading interval after each arrival', async ({
-  page,
-}) => {
-  await page.goto('/tests/fixture.html?auto=true&interval=300&hover=false');
+test('finite autoplay leaves a full reading interval after each arrival', async ({ page }) => {
+  await page.goto('/tests/fixture.html?loop=false&auto=true&interval=300&hover=false');
   const carousel = page.getByRole('region', { name: 'Fixture carousel' });
   const { stops } = await geometry(carousel);
   await carousel.evaluate((el) => {
@@ -193,7 +196,7 @@ test('autoplay completes a full loop and leaves a full reading interval after ea
     .poll(async () => carousel.evaluate((el) => JSON.parse(el.dataset.arrivals || '[]').length), {
       timeout: 10000,
     })
-    .toBeGreaterThanOrEqual(stops.length + 1);
+    .toBeGreaterThanOrEqual(stops.length - 1);
   const arrivals = await carousel.evaluate(
     (el) =>
       JSON.parse(el.dataset.arrivals || '[]') as {
@@ -202,7 +205,7 @@ test('autoplay completes a full loop and leaves a full reading interval after ea
         end: number;
       }[],
   );
-  const expected = [...stops.slice(1), 0, stops[1]];
+  const expected = stops.slice(1);
   expected.forEach((position, index) => {
     expect(Math.abs(arrivals[index].position - position)).toBeLessThan(1);
     if (index) expect(arrivals[index].start - arrivals[index - 1].end).toBeGreaterThanOrEqual(275);
@@ -213,7 +216,7 @@ test('demo remains a working carousel on large and ultrawide screens', async ({ 
   for (const width of [1920, 2560]) {
     await page.setViewportSize({ width, height: 1080 });
     for (const mode of ['posters', 'interactive']) {
-      await page.goto(`/?paused=true&demo=${mode}`);
+      await page.goto(`/?paused=true&loop=false&demo=${mode}`);
       await page.evaluate(() => document.fonts.ready);
       const carousel = page.locator('.demo-carousel');
       const { stops, maximum } = await geometry(carousel);
@@ -224,7 +227,8 @@ test('demo remains a working carousel on large and ultrawide screens', async ({ 
       await carousel.focus();
       await page.keyboard.press('End');
       await expectPosition(carousel, maximum);
-      await page.getByRole('button', { name: 'Next slide', exact: true }).click();
+      await carousel.focus();
+      await page.keyboard.press('Home');
       await expectPosition(carousel, 0);
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth - innerWidth),
@@ -246,7 +250,7 @@ test('playground layout options update navigation, code and shareable settings w
   await page.getByLabel('Direction', { exact: true }).selectOption('rtl');
   await page.getByLabel('Transition', { exact: true }).selectOption('instant');
   await page.getByLabel('Pause on hover', { exact: true }).uncheck();
-  await page.getByLabel('Loop at the end').uncheck();
+  await page.getByLabel('Infinite loop').uncheck();
   const code = page.locator('#example pre');
   await expect(code).toContainText('gap: 24');
   await expect(code).toContainText('min(280px');
@@ -286,7 +290,7 @@ test('autoplay waits while a real touch is held, then resumes after cancellation
     viewport: { width: 390, height: 844 },
   });
   const page = await context.newPage();
-  await page.goto('/tests/fixture.html?auto=true&interval=600&hover=false');
+  await page.goto('/tests/fixture.html?loop=false&auto=true&interval=600&hover=false');
   const carousel = page.getByRole('region', { name: 'Fixture carousel' });
   const box = await carousel.boundingBox();
   if (!box) throw new Error('Missing carousel');

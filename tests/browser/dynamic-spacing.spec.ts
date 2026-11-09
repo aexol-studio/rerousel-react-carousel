@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test('autoplay starts when a slide margin makes previously fitting content overflow', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto('/tests/fixture.html?auto=true&count=2&interval=500&hover=false');
+  await page.goto('/tests/fixture.html?loop=false&auto=true&count=2&interval=500&hover=false');
   const carousel = page.getByRole('region', { name: 'Fixture carousel' });
 
   await expect.poll(() => carousel.evaluate((el) => el.scrollWidth - el.clientWidth)).toBe(0);
@@ -17,7 +17,7 @@ test('autoplay starts when a slide margin makes previously fitting content overf
 });
 
 test('nested content and style updates do not keep resetting the autoplay interval', async ({ page }) => {
-  await page.goto('/tests/fixture.html?auto=true&interval=700&hover=false');
+  await page.goto('/tests/fixture.html?loop=false&auto=true&interval=700&hover=false');
   const carousel = page.getByRole('region', { name: 'Fixture carousel' });
   const timer = await carousel.evaluate((el) => {
     const heading = el.querySelector('h2')!;
@@ -59,7 +59,7 @@ test('autoplay gives a native touch flick a complete interval after momentum set
   });
   try {
     const page = await context.newPage();
-    await page.goto(`/tests/fixture.html?auto=true&interval=${interval}&hover=false`);
+    await page.goto(`/tests/fixture.html?loop=false&auto=true&interval=${interval}&hover=false`);
     const carousel = page.getByRole('region', { name: 'Fixture carousel' });
     await carousel.evaluate((element) => {
       const el = element as TrackedCarousel;

@@ -25,7 +25,7 @@ function Fixture() {
   const params = new URLSearchParams(location.search);
   const ref = useRef<RerouselHandle>(null);
   const [stop, setStop] = useState(params.get('auto') !== 'true');
-  const [loop, setLoop] = useState(true);
+  const [loop, setLoop] = useState(params.get('loop') !== 'false');
   const [count, setCount] = useState(Number(params.get('count')) || 4);
   const [wide, setWide] = useState(false);
   return (

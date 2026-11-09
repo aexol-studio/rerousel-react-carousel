@@ -7,14 +7,14 @@
 
 Native scrolling. Interactive slides. Zero runtime dependencies. React 18 and 19.
 
-[v1 preview](https://6af19ec64dcfc80d0a69faa9--rerousel.netlify.app/) · [Current website](https://rerousel.netlify.app/) · [Quick start](#quick-start) · [API](#api) · [Migration](#migrating-from-0x) · [Issues](https://github.com/aexol-studio/rerousel-react-carousel/issues)
+[v1 preview](https://6af1ab40ec862150ebbeeab7--rerousel.netlify.app/) · [Current website](https://rerousel.netlify.app/) · [Quick start](#quick-start) · [API](#api) · [Migration](#migrating-from-0x) · [Issues](https://github.com/aexol-studio/rerousel-react-carousel/issues)
 
 > **These docs describe the upcoming breaking v1 release.** Publication is pending; `npm install rerousel` currently installs the previous release. Use the repository checkout to try v1 before it is published. Existing users: read [Migrating from 0.x](#migrating-from-0x).
 
 ## What you get
 
 - Native touch and trackpad scrolling with CSS scroll snapping.
-- Previous/next controls, keyboard navigation, optional autoplay and looping.
+- Previous/next controls, keyboard navigation, optional autoplay and seamless looping.
 - One mounted copy of each slide: counters, forms, links, DOM refs and IDs stay intact.
 - Responsive and unequal slide widths, gaps, borders, RTL and changing content.
 - Automatic pause for focus, hover, hidden tabs and reduced motion.
@@ -22,7 +22,7 @@ Native scrolling. Interactive slides. Zero runtime dependencies. React 18 and 19
 
 Rerousel handles movement and essential layout. You supply slide content, styles and visible controls. It does not virtualize large collections or render a themed navigation UI.
 
-The core stays under **2 kB gzipped**, enforced by the build. The measurement is the minified ESM entry compressed with gzip level 9, excluding React, the demo and the npm archive. Run `npm run size` for the current byte count; see [the size check](https://github.com/aexol-studio/rerousel-react-carousel/blob/master/scripts/size.mjs).
+The core is approximately **2.87 kB gzipped**, with an enforced build budget. The measurement is the minified ESM entry compressed with gzip level 9, excluding React, the demo and the npm archive. Run `npm run size` for the current byte count; see [the size check](https://github.com/aexol-studio/rerousel-react-carousel/blob/master/scripts/size.mjs).
 
 ## Installation and support
 
@@ -62,7 +62,7 @@ This example starts with autoplay paused. Add the controls below when enabling i
 
 ### Sizing that works in real layouts
 
-Give each slide a width. For an evenly filled viewport, divide the available width between the visible slides after subtracting the gaps. This example shows one, two or three complete slides according to the container width, including at the end of the track:
+Give each slide a width. For an evenly filled viewport, divide the available width between the visible slides after subtracting the gaps. This example shows one, two or three complete slides according to the container width, including when the last and first slides share the viewport:
 
 ```css
 .gallery-column {
@@ -96,9 +96,9 @@ Give each slide a width. For an evenly filled viewport, divide the available wid
 }
 ```
 
-Wrap `<Rerousel className="gallery">` in a `gallery-column` element and give each direct slide the `gallery-slide` class. Supply at least as many slides as the largest visible count; add more to enable scrolling. The demo uses this layout by default. Turn off **Fit full slides** in its layout controls to try fixed widths with a partial next slide.
+Wrap `<Rerousel className="gallery">` in a `gallery-column` element and give each direct slide the `gallery-slide` class. For seamless looping, include more slides than the largest visible count. Two extra slides are recommended so native gestures have offscreen room in both directions; for three visible slides, use at least five. The demo uses this layout by default. Turn off **Fit full slides** in its layout controls to try fixed widths with a partial next slide.
 
-Pixels, percentages, `clamp()` and unequal widths also work; Rerousel measures rendered positions, so no item ref is needed. In a grid layout, use `minmax(0, 1fr)` for the column holding the carousel. Keep horizontal container padding symmetric. Do not override the essential `display: flex`, `position: relative` or child `flex-shrink: 0` layout rules.
+Pixels, percentages, `clamp()` and unequal widths also work; Rerousel measures rendered positions, so no item ref is needed. In a grid layout, use `minmax(0, 1fr)` for the column holding the carousel. Keep horizontal container padding symmetric. Do not override the essential `display: flex`, `position: relative` or child `flex-shrink: 0` layout rules. Leave slide CSS `order` to Rerousel while looping.
 
 Each direct DOM child is one slide. A component can be a slide if it renders one wrapper element; fragments also work when each item is an element. Wrap bare text. Rerousel does not add wrappers around your children.
 
@@ -143,6 +143,19 @@ export function InteractiveGallery() {
           <h2>A real link</h2>
           <a href="https://github.com/aexol-studio/rerousel-react-carousel">Read the source</a>
         </article>
+        <article style={slideStyle}>
+          <h2>A real checkbox</h2>
+          <label>
+            <input type="checkbox" defaultChecked /> Keep this checked
+          </label>
+        </article>
+        <article style={slideStyle}>
+          <h2>A real disclosure</h2>
+          <details>
+            <summary>Show more</summary>
+            <p>This stays open when you navigate away and back.</p>
+          </details>
+        </article>
       </Rerousel>
 
       <button type="button" onClick={() => carousel.current?.previous()}>
@@ -160,11 +173,15 @@ State and input values survive navigation because each slide remains mounted onc
 
 ### Looping and motion
 
-With `loop={true}`, **Next at the end returns to the beginning**, and Previous at the beginning returns to the end. The return scrolls across the existing track; it is a rewind, not an endless forward-moving strip. Slides are never cloned.
+With `loop={true}`, the first slide follows the last in the same direction, and Previous works in reverse. Rerousel changes the CSS `order` of fully offscreen slides and compensates the native scroll position in the same update. Visible content stays in place during that adjustment; the next advance uses native scrolling. Each slide keeps its original DOM node and React instance.
 
-`behavior="smooth"` is the default for manual advances, autoplay and the return between ends. Use `behavior="instant"` for immediate movement. The browser controls smooth-scroll timing. Home/End navigation is immediate, and reduced motion always forces immediate movement.
+Seamless looping needs spare content: `scrollWidth - clientWidth` must be at least the widest outer slide (including inline margins) plus the gap. Without that space, a single live slide cannot appear at both edges. Rerousel then uses finite scrolling and stays at the boundary. For native gestures in both directions, provide at least two extra slides beyond the largest visible count. If all slides fit, navigation and autoplay remain idle.
 
-Set `loop={false}` for finite navigation. The first/last visible position stays put when advancing beyond its boundary. If all slides fit, navigation has no work to do and autoplay stays idle.
+`behavior="smooth"` is the default for manual advances and autoplay. Use `behavior="instant"` for immediate movement. The browser controls smooth-scroll timing. Home/End select the first/last slide immediately (the first/last available position in finite mode), and reduced motion always forces immediate movement. This is a slide-by-slide carousel; autoplay waits between advances.
+
+Set `loop={false}` for finite navigation. Advancing past the first or last available position leaves it in place.
+
+CSS ordering changes visual positions only. Screen readers and Tab navigation keep the original DOM order. A focused slide is not recycled; focus inside the carousel pauses autoplay. Leave slide CSS `order` under the component's control.
 
 ## API
 
@@ -175,8 +192,8 @@ Set `loop={false}` for finite navigation. The first/last visible position stays 
 | `children`     | `ReactNode`                      | —          | Your slide elements.                                                                                              |
 | `interval`     | `number`                         | `3000`     | Milliseconds between automatic advances. Non-positive, non-finite or values above 2,147,483,647 disable autoplay. |
 | `stop`         | `boolean`                        | `false`    | Pause autoplay. Touch, keyboard and custom controls remain available.                                             |
-| `loop`         | `boolean`                        | `true`     | Return to the opposite end when advancing past a boundary.                                                        |
-| `behavior`     | `'smooth' \| 'instant'`          | `'smooth'` | Scrolling behavior, including the return between ends. Reduced motion takes priority.                             |
+| `loop`         | `boolean`                        | `true`     | Seamless recycling with enough offscreen content; finite scrolling otherwise.                                     |
+| `behavior`     | `'smooth' \| 'instant'`          | `'smooth'` | Scrolling behavior for navigation and autoplay. Reduced motion takes priority.                                    |
 | `pauseOnHover` | `boolean`                        | `true`     | Pause autoplay while the pointer is over the carousel.                                                            |
 | `itemWidth`    | `number`                         | automatic  | Optional fixed advance distance in CSS pixels. Invalid values fall back to measured slide positions.              |
 | `itemRef`      | `RefObject<HTMLElement \| null>` | —          | Deprecated; accepted for migration but no longer read.                                                            |
@@ -188,13 +205,15 @@ Standard `div` attributes pass through, including `className`, `style`, `dir="rt
 
 ### Ref methods
 
-| Member       | Purpose                                                                               |
-| ------------ | ------------------------------------------------------------------------------------- |
-| `next()`     | Advance toward the next slide or return from the end when looping.                    |
-| `previous()` | Advance toward the previous slide or return from the beginning when looping.          |
-| `element`    | Read-only reference to the native scrolling `HTMLDivElement`, or `null` before mount. |
+| Member       | Purpose                                                                                |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `next()`     | Advance to the next slide, continuing through the last-to-first seam when looping.     |
+| `previous()` | Advance to the previous slide, continuing through the first-to-last seam when looping. |
+| `element`    | Read-only reference to the native scrolling `HTMLDivElement`, or `null` before mount.  |
 
-Methods also work while autoplay is stopped. Each rapid next/previous command advances from the requested destination so repeated clicks do not get stuck on an in-progress scroll. The handle is available after React mounts the component; use optional chaining in event handlers.
+Methods also work while autoplay is stopped. Rapid next/previous commands are queued until the current native animation settles; opposite queued commands cancel each other. The handle is available after React mounts the component; use optional chaining in event handlers.
+
+In loop mode, `element.scrollLeft` recenters as hidden slides are recycled. It is a physical scroll position, not a permanent slide index or progress value. For custom indicators, compare slide bounding boxes with the viewport to identify the visible content.
 
 ### Autoplay and accessibility
 
@@ -209,7 +228,7 @@ Provide a visible start/pause control, as in the interactive example. Give the c
 | Reduced-motion preference enabled                | Autoplay is disabled; manual navigation is instant. |
 | All slides fit                                   | Autoplay remains idle.                              |
 
-When the carousel itself has focus, **Left/Right** navigate in the visual direction; **Home/End** go to the beginning/end. Keys from inputs, buttons and other descendants remain available to those elements. Native swipe and trackpad scrolling stay available. Autoplay waits during a pointer gesture or in-progress scroll, then gives the settled slide a full interval before advancing.
+When the carousel itself has focus, **Left/Right** navigate in the visual direction; **Home/End** select the first/last slide (or the first/last available position in finite mode). Keys from inputs, buttons and other descendants remain available to those elements. Native swipe and trackpad scrolling stay available. Autoplay waits during a pointer gesture or in-progress scroll, then gives the settled slide a full interval before advancing.
 
 The root is a focusable region with `aria-roledescription="carousel"`. Your content supplies its own headings, labels, contrast and visible focus indicators. The component does not announce every automatic advance or clone interactive elements.
 
@@ -237,16 +256,17 @@ If supplied, `nonce` is forwarded to the small essential `<style>` element. The 
 
 ## Troubleshooting
 
-| Symptom                                               | What to check                                                                                                                                                      |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Nothing moves on a large screen                       | Compare `element.scrollWidth` with `element.clientWidth`. If everything fits, this is expected. Constrain the gallery width, use wider slides or add more content. |
-| The page gets wider instead of the carousel scrolling | Add `min-width: 0` to its flex/grid parent and use `minmax(0, 1fr)` for the grid track. Give the carousel a bounded width.                                         |
-| Autoplay appears stopped                              | Check `stop`, `interval`, hover, focus, document visibility and reduced motion. Moving focus to a slide intentionally pauses autoplay.                             |
-| The last slide does not align with the first edge     | The final position is clamped to the end of the content, avoiding empty trailing space. This is expected for unequal widths or several visible slides.             |
-| A loop moves back across the track                    | Looping rewinds across one live set of slides. It does not create a seamless infinite strip. Use `behavior="instant"` if you prefer an immediate return.           |
-| Arrows do not move the carousel while typing          | Input and other descendant keys are intentionally preserved. Focus the carousel container itself or use your navigation buttons.                                   |
-| Custom layout breaks measurement                      | Keep the root relatively positioned and slides as direct flex children. Avoid transforms that visually reposition slides without changing layout.                  |
-| State resets when the slide list changes              | Check React keys and component types. Rerousel never clones slides, but React remounts a child when its key or type changes.                                       |
+| Symptom                                                          | What to check                                                                                                                                                                                   |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Nothing moves on a large screen                                  | Compare `element.scrollWidth` with `element.clientWidth`. If everything fits, this is expected. Constrain the gallery width, use wider slides or add more content.                              |
+| The page gets wider instead of the carousel scrolling            | Add `min-width: 0` to its flex/grid parent and use `minmax(0, 1fr)` for the grid track. Give the carousel a bounded width.                                                                      |
+| Autoplay appears stopped                                         | Check `stop`, `interval`, hover, focus, document visibility and reduced motion. Moving focus to a slide intentionally pauses autoplay.                                                          |
+| The last slide does not align with the first edge in finite mode | The final position is clamped to the content end to avoid empty trailing space. This is expected with unequal widths or several visible slides.                                                 |
+| Looping stops at a boundary                                      | Ensure `loop` is enabled and overflow is at least the widest outer slide (including inline margins) plus the gap. Add more slides or reduce the visible count. A focused slide is not recycled. |
+| A custom progress indicator jumps                                | Native `scrollLeft` recenters during looping. Identify visible slides from their bounding boxes rather than treating the physical scroll offset as a fixed index.                               |
+| Arrows do not move the carousel while typing                     | Input and other descendant keys are intentionally preserved. Focus the carousel container itself or use your navigation buttons.                                                                |
+| Custom layout breaks measurement                                 | Keep the root relatively positioned and slides as direct flex children. Leave CSS `order` to Rerousel; avoid transforms that reposition slides without changing layout.                         |
+| State resets when the slide list changes                         | Check React keys and component types. Rerousel never clones slides, but React remounts a child when its key or type changes.                                                                    |
 
 For a bug report, include the React/browser version, viewport width, relevant CSS and a minimal reproduction. [Open an issue](https://github.com/aexol-studio/rerousel-react-carousel/issues).
 
@@ -255,7 +275,7 @@ For a bug report, include the React/browser version, viewport width, relevant CS
 1. Upgrade to React 18.3.1 or React 19. React 16/17 are no longer supported.
 2. Remove `itemRef` unless your own code needs it. Rerousel now measures slide positions automatically.
 3. Children now render once. Remove workarounds for duplicated IDs, refs or component effects.
-4. Looping rewinds across the existing track. If your design needs an uninterrupted endless strip, that is a different interaction from this carousel.
+4. Looping now recycles fully offscreen slides for seamless last-to-first movement. Provide spare slides, leave their CSS `order` to Rerousel, and do not derive a fixed slide index from `scrollLeft`. Insufficient content falls back to finite scrolling.
 5. Add a descriptive label and visible autoplay control. Focus, hover, hidden documents and reduced motion now pause autoplay automatically.
 6. `interval` and `stop` keep their core meanings. The previously declared `itemWidth` prop now sets a fixed advance distance; prefer automatic measurement for responsive or unequal widths.
 7. Use the public `rerousel` import. ESM, CommonJS and declarations are exposed through package exports; deep imports into the old `lib` layout are unsupported.

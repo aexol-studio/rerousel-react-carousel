@@ -4,34 +4,31 @@ import AxeBuilder from '@axe-core/playwright';
 async function position(page: Page) {
   return page.getByRole('region', { name: 'Fixture carousel' }).evaluate((el) => Math.abs(el.scrollLeft));
 }
-async function next(page: Page) {
-  const previous = await position(page);
-  await page.getByRole('button', { name: 'Next', exact: true }).click();
-  await expect.poll(() => position(page)).not.toBe(previous);
-  await page.waitForTimeout(500);
-}
-
-test('live state, refs, IDs and inputs survive repeated forward/backward loops', async ({ page }) => {
-  await page.goto('/tests/fixture.html');
+test('live state, refs, IDs and inputs survive repeated finite Home and End navigation', async ({ page }) => {
+  await page.goto('/tests/fixture.html?loop=false');
   await page.getByRole('button', { name: 'Count 0: 0' }).click();
   await page.getByLabel('Note 0').fill('Keep my input');
   await page.getByLabel('Note 0').evaluate((el) => {
     (el as HTMLInputElement).dataset.identity = 'original';
   });
-  for (let i = 0; i < 8; i++) await next(page);
-  await page.getByRole('region', { name: 'Fixture carousel' }).focus();
-  await page.keyboard.press('Home');
-  await expect.poll(() => position(page)).toBe(0);
+  const carousel = page.getByRole('region', { name: 'Fixture carousel' });
+  await carousel.focus();
+  for (let i = 0; i < 4; i++) {
+    await page.keyboard.press('End');
+    await expect.poll(() => position(page)).toBeGreaterThan(100);
+    await page.keyboard.press('Home');
+    await expect.poll(() => position(page)).toBe(0);
+  }
   await expect(page.getByRole('button', { name: 'Count 0: 1' })).toBeVisible();
   await expect(page.getByLabel('Note 0')).toHaveValue('Keep my input');
   await expect(page.getByLabel('Note 0')).toHaveAttribute('data-identity', 'original');
   expect(await page.locator('#note-0').count()).toBe(1);
   await page.getByRole('button', { name: 'Previous', exact: true }).click();
-  await expect.poll(() => position(page)).toBeGreaterThan(100);
+  await expect.poll(() => position(page)).toBe(0);
 });
 
 test('native keyboard navigation, descendants and RTL work', async ({ page }) => {
-  await page.goto('/tests/fixture.html?rtl=true');
+  await page.goto('/tests/fixture.html?loop=false&rtl=true');
   const carousel = page.getByRole('region', { name: 'Fixture carousel' });
   await carousel.focus();
   await page.keyboard.press('ArrowLeft');
@@ -49,7 +46,7 @@ test('native keyboard navigation, descendants and RTL work', async ({ page }) =>
 });
 
 test('autoplay pauses on focus and resumes when focus leaves', async ({ page, isMobile }) => {
-  await page.goto('/tests/fixture.html?auto=true');
+  await page.goto('/tests/fixture.html?loop=false&auto=true');
   // Move the desktop pointer away so hover does not mask the focus check.
   if (!isMobile) await page.mouse.move(1, 1);
   await expect.poll(() => position(page), { timeout: 4000 }).toBeGreaterThan(100);
@@ -65,7 +62,7 @@ test('autoplay pauses on focus and resumes when focus leaves', async ({ page, is
 
 test('reduced motion disables autoplay and makes manual navigation immediate', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/tests/fixture.html?auto=true');
+  await page.goto('/tests/fixture.html?loop=false&auto=true');
   await page.waitForTimeout(1300);
   expect(await position(page)).toBe(0);
   await page.getByRole('button', { name: 'Next', exact: true }).click();
@@ -103,7 +100,7 @@ test('demo settings, code copy, interactive slides and accessibility work', asyn
   await page.getByRole('button', { name: 'Add one' }).click();
   await expect(page.locator('.counter-value')).toHaveText('1');
   await page.locator('#interval').fill('4500');
-  await page.getByLabel('Loop at the end').uncheck();
+  await page.getByLabel('Infinite loop').uncheck();
   await expect(page.locator('#example pre')).toContainText('interval={4500}');
   await expect(page.locator('#example pre')).toContainText('loop={false}');
   expect(page.url()).toContain('demo=interactive');
@@ -149,7 +146,7 @@ test('a real native touch swipe scrolls the carousel', async ({ browser, browser
     viewport: { width: 390, height: 844 },
   });
   const page = await context.newPage();
-  await page.goto('/tests/fixture.html');
+  await page.goto('/tests/fixture.html?loop=false');
   const box = await page.getByRole('region', { name: 'Fixture carousel' }).boundingBox();
   if (!box) throw new Error('Missing carousel');
   const session = await context.newCDPSession(page);
@@ -173,7 +170,7 @@ test('autoplay starts when new slides make an initially fitting carousel overflo
   page,
   isMobile,
 }) => {
-  await page.goto('/tests/fixture.html?auto=true');
+  await page.goto('/tests/fixture.html?loop=false&auto=true');
   if (!isMobile) await page.mouse.move(1, 1);
   for (let i = 0; i < 3; i++) await page.getByRole('button', { name: 'Remove slide' }).click();
   await expect(page.locator('[data-slide]')).toHaveCount(1);
@@ -189,7 +186,7 @@ test('a style change that creates overflow starts autoplay without remounting sl
   isMobile,
 }) => {
   test.skip(isMobile, 'Two fixture slides only fit together at desktop width.');
-  await page.goto('/tests/fixture.html?auto=true');
+  await page.goto('/tests/fixture.html?loop=false&auto=true');
   await page.mouse.move(1, 1);
   for (let i = 0; i < 2; i++) await page.getByRole('button', { name: 'Remove slide' }).click();
   await page.getByLabel('Note 0').fill('Keep this');

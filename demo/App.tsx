@@ -131,8 +131,13 @@ const apiRows = [
   ['children', 'ReactNode', '—', 'Your slide elements. Set their widths in your CSS.'],
   ['interval', 'number', '3000', 'Milliseconds between advances. Set ≤ 0 to disable autoplay.'],
   ['stop', 'boolean', 'false', 'Pause autoplay. Manual controls still work.'],
-  ['loop', 'boolean', 'true', 'Return to the start after the last scroll position.'],
-  ['behavior', "'smooth' | 'instant'", "'smooth'", 'Scroll transition, including the return to the start.'],
+  [
+    'loop',
+    'boolean',
+    'true',
+    'Continue seamlessly from the final slide to the first, with enough spare slides.',
+  ],
+  ['behavior', "'smooth' | 'instant'", "'smooth'", 'Native scroll transition between slides.'],
   ['pauseOnHover', 'boolean', 'true', 'Pause while the pointer is over a slide.'],
   ['itemWidth', 'number', 'auto', 'Optional fixed advance distance in CSS pixels.'],
   ['itemRef', 'RefObject', '—', 'Deprecated. Accepted for migration; no longer needed.'],
@@ -153,7 +158,7 @@ export function App() {
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [hidden, setHidden] = useState(document.hidden);
-  const [position, setPosition] = useState({ overflow: false, start: true, end: false, first: 1, last: 1 });
+  const [position, setPosition] = useState({ overflow: false, start: true, end: false, visible: '1' });
   const [reduced, setReduced] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
   const carousel = useRef<RerouselHandle>(null);
   useEffect(() => {
@@ -174,16 +179,17 @@ export function App() {
       const max = element.scrollWidth - element.clientWidth;
       const offset = Math.abs(element.scrollLeft);
       const bounds = element.getBoundingClientRect();
-      const visible = Array.from(element.children).flatMap((slide, index) => {
-        const rect = slide.getBoundingClientRect();
-        return rect.right > bounds.left + 1 && rect.left < bounds.right - 1 ? [index + 1] : [];
-      });
+      const rtl = getComputedStyle(element).direction === 'rtl';
+      const visible = Array.from(element.children)
+        .map((slide, index) => ({ index: index + 1, rect: slide.getBoundingClientRect() }))
+        .filter(({ rect }) => rect.right > bounds.left + 1 && rect.left < bounds.right - 1)
+        .sort((a, b) => (rtl ? b.rect.right - a.rect.right : a.rect.left - b.rect.left))
+        .map(({ index }) => index);
       const next = {
         overflow: max > 1,
         start: offset <= 1,
         end: offset >= max - 1,
-        first: visible[0] ?? 1,
-        last: visible[visible.length - 1] ?? 1,
+        visible: visible.join(' · ') || '1',
       };
       setPosition((current) =>
         Object.keys(next).every((key) => current[key as keyof typeof next] === next[key as keyof typeof next])
@@ -202,7 +208,7 @@ export function App() {
       resize.disconnect();
       element.removeEventListener('scroll', measure);
     };
-  }, [mode, slideWidth, gap, direction, fit]);
+  }, [mode, slideWidth, gap, direction, fit, loop]);
   useEffect(() => {
     const url = new URL(window.location.href);
     url.search = '';
@@ -441,7 +447,7 @@ ${layoutStyles}      <Rerousel
                           <br />
                           MORE.
                         </strong>
-                        <span className="poster-foot">Try the return to the first slide.</span>
+                        <span className="poster-foot">Keep going. The first slide comes next.</span>
                       </article>,
                     ]
                   : [
@@ -466,7 +472,7 @@ ${layoutStyles}      <Rerousel
               <div className="stage-bottom">
                 <span className="navigation-hint">
                   <span className="slide-position">
-                    {position.first === position.last ? position.first : `${position.first}–${position.last}`}
+                    {position.visible}
                     <span> / {mode === 'posters' ? 6 : 5} slides</span>
                   </span>
                   Swipe, or focus the slides and use ← →
@@ -620,7 +626,7 @@ ${layoutStyles}      <Rerousel
                 </p>
               </details>
               <label className="check-label">
-                <span>Loop at the end</span>
+                <span>Infinite loop</span>
                 <input
                   name="loop"
                   type="checkbox"
@@ -774,9 +780,9 @@ ${layoutStyles}      <Rerousel
                 <details>
                   <summary>How does the loop work?</summary>
                   <p>
-                    Each slide renders once. After the last scroll position, the next advance scrolls back to
-                    the beginning using your chosen transition. Smooth scrolling is the default; choose
-                    Instant in the playground to compare. This return preserves every live component.
+                    Each slide renders once. Offscreen slides move around the track, so the last flows
+                    straight into the first. Forms and React state stay intact. Leave spare slides outside the
+                    viewport; if there is too little content, scrolling stops at the ends.
                   </p>
                 </details>
                 <details>

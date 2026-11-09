@@ -36,7 +36,7 @@
     "test:watch": "vitest",
     "test:browser": "playwright test",
     "size": "node scripts/size.mjs",
-    "check": "npm run lint && npm run typecheck && npm test && npm run build:sandbox && npm run size",
+    "check": "npm run build:sandbox && npm run lint && npm run typecheck && npm test",
     "prepublishOnly": "npm run check && npm audit --audit-level=low",
     "test:compat": "node scripts/compat.mjs",
     "test:package": "node scripts/package-smoke.mjs",

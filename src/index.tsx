@@ -1,6 +1,5 @@
 import {
   forwardRef,
-  useCallback,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -15,9 +14,9 @@ export interface RerouselProps extends Omit<HTMLAttributes<HTMLDivElement>, 'ite
   interval?: number;
   /** Pause autoplay. Manual navigation remains available. */
   stop?: boolean;
-  /** Return to the opposite end at the boundary. Slides are never cloned. */
+  /** Seamlessly recycle offscreen slides when there is enough spare content. No clones. */
   loop?: boolean;
-  /** Native scrolling for next/previous, including the return at either end. */
+  /** Native scrolling for next/previous. */
   behavior?: 'smooth' | 'instant';
   /** Pause autoplay while the pointer is over the carousel. */
   pauseOnHover?: boolean;
@@ -34,7 +33,6 @@ export interface RerouselHandle {
   readonly element: HTMLDivElement | null;
 }
 
-const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)');
 const css =
   '.rerousel{scroll-snap-type:x mandatory}.rerousel:focus-within{scroll-snap-type:none}.rerousel>*{flex-shrink:0;box-sizing:border-box;scroll-snap-align:start}.rerousel::-webkit-scrollbar{display:none}';
 
@@ -58,77 +56,120 @@ export const Rerousel = forwardRef<RerouselHandle, RerouselProps>(function Rerou
   ref,
 ) {
   const viewport = useRef<HTMLDivElement>(null);
-  const destination = useRef<number | undefined>(undefined);
-
-  const move = useCallback(
-    (direction: number, edge = false) => {
-      const el = viewport.current;
-      if (!el) return;
-      const max = el.scrollWidth - el.clientWidth;
-      if (max <= 1) return;
-      const computed = getComputedStyle(el);
-      const sign = computed.direction === 'rtl' ? -1 : 1;
-      const slides = Array.from(el.children) as HTMLElement[];
-      const first = slides[0];
-      if (!first) return;
-      const edgeOf = (slide: HTMLElement) => slide.offsetLeft + (sign < 0 ? slide.offsetWidth : 0);
-      const fixed = itemWidth && Number.isFinite(itemWidth) && itemWidth > 0;
-      const padding = computed.scrollPaddingInlineStart;
-      const inset = (parseFloat(padding) || 0) * (padding.endsWith('%') ? el.clientWidth / 100 : 1);
-      const origin = (sign > 0 ? edgeOf(first) : el.clientWidth - edgeOf(first)) - inset;
-      const clamp = (value: number) => Math.max(0, Math.min(max, value));
-      const start = fixed ? 0 : clamp(origin);
-      // Keep the requested destination while native smooth scrolling is in flight.
-      // Measuring the intermediate position would drop quick repeated commands.
-      const position = clamp(destination.current ?? sign * el.scrollLeft);
-      const boundary = direction > 0 ? position >= max - 1 : position <= start + 1;
-      let target: number;
-      if (edge || boundary) {
-        if (boundary && !loop && !edge) return;
-        target = direction > 0 ? start : max;
-      } else if (fixed) {
-        target = clamp(position + direction * itemWidth!);
-      } else {
-        const offsets = slides.map((slide) => clamp(origin + sign * (edgeOf(slide) - edgeOf(first))));
-        target =
-          direction > 0
-            ? (offsets.find((offset) => offset > position + 1) ?? max)
-            : (offsets.reverse().find((offset) => offset < position - 1) ?? start);
-      }
-      const instant = edge || reducedMotion().matches || behavior === 'instant';
-      destination.current = instant || Math.abs(target - sign * el.scrollLeft) < 1 ? undefined : target;
-      el.scrollTo({
-        left: sign * target,
-        behavior: instant ? 'instant' : 'smooth',
-      });
-    },
-    [itemWidth, loop, behavior],
-  );
+  const command = useRef<(direction: number, edge?: boolean) => void>(() => {});
+  const refresh = useRef(() => {});
+  const options = useRef({ interval, stop, loop, behavior, pauseOnHover, itemWidth });
+  options.current = { interval, stop, loop, behavior, pauseOnHover, itemWidth };
 
   useImperativeHandle(
     ref,
     () => ({
-      next: () => move(1),
-      previous: () => move(-1),
+      next: () => command.current(1),
+      previous: () => command.current(-1),
       get element() {
         return viewport.current;
       },
     }),
-    [move],
+    [],
   );
 
   useEffect(() => {
     const el = viewport.current;
     if (!el) return;
-    const motion = reducedMotion();
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const original = new Map<HTMLElement, string>();
+    let slides: HTMLElement[] = [];
+    let declared: HTMLElement[] = [];
+    let measured = '';
+    const measure = () =>
+      [el.clientWidth, el.scrollWidth, ...declared.map((slide) => slide.offsetWidth)].join();
+    let destination: number | undefined;
+    let queued = 0;
     let timer: ReturnType<typeof setInterval> | undefined;
-    let hovered = pauseOnHover && el.matches(':hover');
+    let hovered = el.matches(':hover');
     let pressed = false;
     let scrolling = false;
     let active = true;
+    const geometry = () => {
+      const computed = getComputedStyle(el);
+      const sign = computed.direction === 'rtl' ? -1 : 1;
+      const padding = computed.scrollPaddingInlineStart;
+      const inset = (parseFloat(padding) || 0) * (padding.endsWith('%') ? el.clientWidth / 100 : 1);
+      const offset = (slide: HTMLElement) =>
+        (sign > 0 ? slide.offsetLeft : el.clientWidth - slide.offsetLeft - slide.offsetWidth) - inset;
+      const max = el.scrollWidth - el.clientWidth;
+      const position = sign * el.scrollLeft;
+      const fixed = options.current.itemWidth;
+      const step = fixed && Number.isFinite(fixed) && fixed > 0 ? fixed : 0;
+      const gap = parseFloat(computed.columnGap) || 0;
+      const stride = (slide: HTMLElement) => {
+        const css = getComputedStyle(slide);
+        return (
+          slide.offsetWidth +
+          gap +
+          (parseFloat(css.marginInlineStart) || 0) +
+          (parseFloat(css.marginInlineEnd) || 0)
+        );
+      };
+      // A single live slide cannot occupy both edges at once. Without a spare
+      // slide, retain finite scrolling instead of cloning or visibly rewinding.
+      const infinite =
+        options.current.loop && max > 1 && slides.length > 1 && max + 1 >= Math.max(...slides.map(stride));
+      return { sign, offset, max, position, step, infinite, inset, stride };
+    };
+    const arrange = (next: HTMLElement[], anchor?: HTMLElement, restore = false) => {
+      const before = anchor?.getBoundingClientRect().left ?? 0;
+      const snap = el.style.scrollSnapType;
+      el.style.scrollSnapType = 'none';
+      slides = next;
+      slides.forEach((slide, i) => {
+        if (!original.has(slide)) original.set(slide, slide.style.order);
+        const order = restore ? original.get(slide)! : String(i);
+        if (slide.style.order !== order) slide.style.order = order;
+      });
+      if (restore) original.clear();
+      const left = anchor ? el.scrollLeft + anchor.getBoundingClientRect().left - before : el.scrollLeft;
+      el.style.scrollSnapType = snap;
+      if (anchor) el.scrollTo({ left, behavior: 'instant' });
+    };
+    const rotate = (direction: number) => {
+      const { sign, position, offset, inset } = geometry();
+      const first = slides[0];
+      const last = slides[slides.length - 1];
+      const candidate = direction > 0 ? first : last;
+      const hidden =
+        direction > 0
+          ? offset(first) + inset + first.offsetWidth <= position + 1
+          : offset(last) + inset >= position + el.clientWidth - 1;
+      if (!hidden || candidate.contains(document.activeElement)) return false;
+      const next = [...slides];
+      if (direction > 0) next.push(next.shift()!);
+      else next.unshift(next.pop()!);
+      arrange(next, direction > 0 ? last : first);
+      return Math.abs(sign * el.scrollLeft - position) > 1;
+    };
+    const normalize = () => {
+      const { infinite, position, max, offset, stride: slideStride } = geometry();
+      if (!infinite) {
+        if (original.size)
+          arrange(
+            declared,
+            slides.find((slide) => offset(slide) + slide.offsetWidth > position),
+            true,
+          );
+        return;
+      }
+      // Keep a buffer for native gestures without walking the entire track.
+      // Only a hidden slide moves; visible pixels are preserved in this frame.
+      const direction = position > max / 2 ? 1 : -1;
+      const stride =
+        direction > 0 ? offset(slides[1]) - offset(slides[0]) : slideStride(slides[slides.length - 1]);
+      if (Math.abs(position - direction * stride - max / 2) < Math.abs(position - max / 2) - 1)
+        rotate(direction);
+    };
     const sync = () => {
       clearInterval(timer);
-      timer = undefined;
+      const { interval, stop, pauseOnHover } = options.current;
       if (
         active &&
         !stop &&
@@ -137,20 +178,79 @@ export const Rerousel = forwardRef<RerouselHandle, RerouselProps>(function Rerou
         interval <= 2147483647 &&
         !motion.matches &&
         !document.hidden &&
-        !hovered &&
+        !(hovered && pauseOnHover) &&
         !pressed &&
         !scrolling &&
         !el.contains(document.activeElement) &&
         el.scrollWidth > el.clientWidth + 1
       ) {
         timer = setInterval(() => {
-          if (destination.current === undefined) move(1);
+          if (destination === undefined) move(1);
         }, interval);
       }
     };
+    const move = (direction: number, edge = false) => {
+      if (!slides.length) return;
+      if (destination !== undefined && !edge) {
+        queued += direction;
+        return;
+      }
+      measured = measure();
+      let g = geometry();
+      if (g.max <= 1) return;
+      if (edge) {
+        queued = 0;
+        const natural = Array.from(el.children) as HTMLElement[];
+        if (g.infinite && direction < 0) natural.unshift(natural.pop()!);
+        arrange(natural);
+        g = geometry();
+      } else if (g.infinite) {
+        // Prepare space before a command, including Previous at the initial slide.
+        normalize();
+        g = geometry();
+        const offsets = slides.map(g.offset);
+        const target = g.step
+          ? g.position + direction * g.step
+          : direction > 0
+            ? offsets.find((value) => value > g.position + 1)
+            : offsets.reverse().find((value) => value < g.position - 1);
+        if (target === undefined || target < -1 || target > g.max + 1) {
+          if (!rotate(direction)) return;
+          g = geometry();
+        }
+      }
+      const clamp = (value: number) => Math.max(0, Math.min(g.max, value));
+      const offsets = slides.map(g.offset).map(clamp);
+      const start = g.step ? 0 : offsets[0];
+      const target = edge
+        ? g.infinite || direction > 0
+          ? start
+          : g.max
+        : g.step
+          ? clamp(g.position + direction * g.step)
+          : direction > 0
+            ? (offsets.find((value) => value > g.position + 1) ?? g.max)
+            : (offsets.reverse().find((value) => value < g.position - 1) ?? start);
+      const instant = edge || motion.matches || options.current.behavior === 'instant';
+      destination = instant || Math.abs(target - g.position) < 1 ? undefined : target;
+      el.scrollTo({ left: g.sign * target, behavior: instant ? 'instant' : 'smooth' });
+    };
+    command.current = move;
     const settled = () => {
+      if (destination !== undefined && Math.abs(geometry().position - destination) > 1) return;
       scrolling = false;
-      destination.current = undefined;
+      destination = undefined;
+      if (!pressed) normalize();
+      if (queued) {
+        const direction = Math.sign(queued);
+        queued -= direction;
+        move(direction);
+      }
+      sync();
+    };
+    const cancel = () => {
+      destination = undefined;
+      queued = 0;
       sync();
     };
     const scroll = () => {
@@ -159,7 +259,7 @@ export const Rerousel = forwardRef<RerouselHandle, RerouselProps>(function Rerou
     };
     const press = () => {
       pressed = true;
-      settled();
+      cancel();
     };
     const release = () => {
       if (!pressed) return;
@@ -167,67 +267,112 @@ export const Rerousel = forwardRef<RerouselHandle, RerouselProps>(function Rerou
       sync();
     };
     const enter = () => {
-      hovered = pauseOnHover;
+      hovered = true;
       sync();
     };
     const leave = () => {
       hovered = false;
       sync();
     };
-    // focusout fires before document.activeElement changes; cleanup guards the microtask.
     const blur = () => queueMicrotask(sync);
-    el.addEventListener('pointerenter', enter);
-    el.addEventListener('pointerleave', leave);
-    el.addEventListener('focusin', settled);
-    el.addEventListener('focusout', blur);
-    document.addEventListener('visibilitychange', sync);
-    window.addEventListener('resize', settled);
-    motion.addEventListener('change', sync);
-    // Native gestures and focus scrolling take over from programmatic navigation.
-    el.addEventListener('scrollend', settled);
-    el.addEventListener('scroll', scroll, { passive: true });
-    el.addEventListener('pointerdown', press);
-    window.addEventListener('pointerup', release);
-    window.addEventListener('pointercancel', release);
-    el.addEventListener('wheel', settled, { passive: true });
-    const observer = new ResizeObserver(settled);
     const observe = () => {
+      cancel();
+      const current = Array.from(el.children) as HTMLElement[];
+      if (
+        current.length !== declared.length ||
+        current.some((slide, i) => slide !== declared[i]) ||
+        !options.current.loop
+      ) {
+        for (const [slide, order] of original) slide.style.order = order;
+        original.clear();
+        declared = current;
+        slides = current;
+      }
+      measured = measure();
       observer.disconnect();
       observer.observe(el, { box: 'border-box' });
-      for (const child of el.children) observer.observe(child, { box: 'border-box' });
-      settled();
+      for (const child of slides) observer.observe(child, { box: 'border-box' });
+      normalize();
+      scrolling = false;
+      sync();
     };
+    const resize = () => {
+      const size = measure();
+      if (size === measured) return;
+      measured = size;
+      cancel();
+      normalize();
+      scrolling = false;
+      sync();
+    };
+    const observer = new ResizeObserver(resize);
+    const externalStyle = (value: string | null) =>
+      (value || '')
+        .split(';')
+        .map((part) => part.trim())
+        .filter((part) => part && !/^(order|scroll-snap-type):/.test(part))
+        .join(';');
     const mutations = new MutationObserver((records) => {
-      if (records.some(({ target }) => target === el || target.parentNode === el)) observe();
+      if (
+        records.some(
+          ({ target, attributeName, oldValue }) =>
+            (target === el || target.parentNode === el) &&
+            (attributeName !== 'style' ||
+              externalStyle(oldValue) !== externalStyle((target as HTMLElement).getAttribute('style'))),
+        )
+      )
+        observe();
     });
     mutations.observe(el, {
       childList: true,
       subtree: true,
       attributes: true,
+      attributeOldValue: true,
       attributeFilter: ['class', 'style', 'dir'],
     });
+    refresh.current = observe;
+    el.addEventListener('pointerenter', enter);
+    el.addEventListener('pointerleave', leave);
+    el.addEventListener('focusin', cancel);
+    el.addEventListener('focusout', blur);
+    document.addEventListener('visibilitychange', sync);
+    window.addEventListener('resize', resize);
+    motion.addEventListener('change', sync);
+    el.addEventListener('scrollend', settled);
+    el.addEventListener('scroll', scroll, { passive: true });
+    el.addEventListener('pointerdown', press);
+    window.addEventListener('pointerup', release);
+    window.addEventListener('pointercancel', release);
+    el.addEventListener('wheel', cancel, { passive: true });
     observe();
     return () => {
       active = false;
-      destination.current = undefined;
       clearInterval(timer);
       observer.disconnect();
       mutations.disconnect();
       el.removeEventListener('pointerenter', enter);
       el.removeEventListener('pointerleave', leave);
-      el.removeEventListener('focusin', settled);
+      el.removeEventListener('focusin', cancel);
       el.removeEventListener('focusout', blur);
       el.removeEventListener('scrollend', settled);
       el.removeEventListener('scroll', scroll);
       el.removeEventListener('pointerdown', press);
       window.removeEventListener('pointerup', release);
       window.removeEventListener('pointercancel', release);
-      el.removeEventListener('wheel', settled);
+      el.removeEventListener('wheel', cancel);
       document.removeEventListener('visibilitychange', sync);
-      window.removeEventListener('resize', settled);
+      window.removeEventListener('resize', resize);
       motion.removeEventListener('change', sync);
+      const { offset, position } = geometry();
+      if (original.size)
+        arrange(
+          declared,
+          slides.find((slide) => offset(slide) + slide.offsetWidth > position),
+          true,
+        );
     };
-  }, [interval, stop, pauseOnHover, move]);
+  }, []);
+  useEffect(() => refresh.current(), [interval, stop, loop, behavior, pauseOnHover, itemWidth]);
 
   return (
     <>
@@ -248,6 +393,7 @@ export const Rerousel = forwardRef<RerouselHandle, RerouselProps>(function Rerou
           alignItems: 'center',
           overflowX: 'auto',
           scrollbarWidth: 'none',
+          overflowAnchor: 'none',
           ...(itemWidth && Number.isFinite(itemWidth) && itemWidth > 0 ? { scrollSnapType: 'none' } : {}),
           ...style,
         }}
@@ -278,7 +424,7 @@ export const Rerousel = forwardRef<RerouselHandle, RerouselProps>(function Rerou
                     : 0;
           if (direction) {
             event.preventDefault();
-            move(direction, event.key === 'Home' || event.key === 'End');
+            command.current(direction, event.key === 'Home' || event.key === 'End');
           }
         }}
       >

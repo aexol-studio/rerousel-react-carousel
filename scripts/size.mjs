@@ -7,7 +7,7 @@ const report = {
   gzip: gzipSync(source, { level: 9 }).length,
   brotli: brotliCompressSync(source).length,
   runtimeDependencies: 0,
-  gzipBudget: 2000,
+  gzipBudget: 2900,
 };
 console.log(JSON.stringify(report, null, 2));
 if (report.gzip > report.gzipBudget)

@@ -5,7 +5,7 @@
 Breaking modernization of Rerousel for React 18.3.1 and React 19.
 
 - Replace the old duplicated-child/timer implementation with native scrolling over one live copy of each slide. Slide state, refs, IDs, focus and form values stay intact.
-- Loop with a smooth return between the ends, with an optional instant transition. Each slide renders once; this is not a continuous marquee.
+- Loop seamlessly in either direction by recycling fully offscreen slides with CSS `order` and compensating the native scroll position. Each slide renders once. Insufficient spare content falls back to finite scrolling; slide `order` is reserved while looping.
 - Remove typestyle and all runtime dependencies. Ship minified ESM and CommonJS, public TypeScript declarations and a preserved client directive.
 - Fix implicit `children` typing, stale scroll positions, mobile reverse scrolling at the loop boundary, interval cleanup, frequent parent renders and StrictMode behavior.
 - Measure actual slide offsets for unequal/responsive widths, padding, borders and gaps. `itemRef` is optional and deprecated; `itemWidth` now works as an optional fixed advance distance.
@@ -21,3 +21,5 @@ Breaking modernization of Rerousel for React 18.3.1 and React 19.
 - Add `behavior="smooth" | "instant"` and an intrinsic minimum width that works inside flex/grid layouts.
 - Expand the live demo with enough content at wide viewports, layout/direction/transition controls, visible positions and accurate pause/end/fit status.
 - Add exact-destination browser regressions, repeated loops, touch holds and wide-screen coverage; refresh the vector identity and README with complete examples and troubleshooting.
+
+- Preserve the original DOM reading/tab order while recycling visual positions. Queue rapid commands until the current native animation settles and cancel opposite queued commands.
